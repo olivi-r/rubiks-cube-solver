@@ -1,12 +1,13 @@
 class Matrix3x3:
     def __init__(self, rows: list=None):
+        # generate empty matrix
+        self.data = [[0, 0, 0] for _ in range(3)]
+
         if isinstance(rows, list) and len(rows) == 3 and set(map(len, rows)) == {3}:
             # valid 2d list
-            self.data = rows
-
-        else:
-            # generate empty matrix
-            self.data = [[0, 0, 0] for _ in range(3)]
+            if all(isinstance(value, (int, float)) for row in rows for value in row):
+                # all values are actually numbers
+                self.data = rows
 
     def __mul__(self, other):
         if isinstance(other, self.__class__):
@@ -27,10 +28,15 @@ class Matrix3x3:
 class Vector3(Matrix3x3):
     def __init__(self, i: float=0, j: float=0, k: float=0):
         # Vectors are represented as matrices to allow easy matrix - vector multiplication
-        assert isinstance(i, (int, float))
-        assert isinstance(j, (int, float))
-        assert isinstance(k, (int, float))
-        self.data = [[i, 0, 0], [j, 0, 0], [k, 0, 0]]
+        try:
+            # test that values entered are actually numbers, otherwise create a zero vector
+            assert isinstance(i, (int, float))
+            assert isinstance(j, (int, float))
+            assert isinstance(k, (int, float))
+            self.data = [[i, 0, 0], [j, 0, 0], [k, 0, 0]]
+
+        except AssertionError:
+            self.data = [[0, 0, 0] for _ in range(3)]
 
     @property
     def i(self):
