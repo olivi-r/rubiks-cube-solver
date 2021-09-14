@@ -1,3 +1,6 @@
+import math
+
+
 class Matrix3x3:
     def __init__(self, rows: list=None):
         # generate empty matrix
@@ -60,3 +63,28 @@ class Vector3(Matrix3x3):
     @k.setter
     def k(self, value):
         self.data[2][0] = value
+
+
+# matrices to rotate a point in 3D space
+def rot_x(deg: float) -> Matrix3x3:
+    return Matrix3x3([
+        [1, 0, 0],
+        [0, math.cos(math.radians(deg)), math.sin(math.radians(deg))],
+        [0, -math.sin(math.radians(deg)), math.cos(math.radians(deg))]
+    ])
+
+
+def rot_y(deg: float) -> Matrix3x3:
+    return Matrix3x3([
+        [math.cos(math.radians(deg)), 0, -math.sin(math.radians(deg))],
+        [0, 1, 0],
+        [math.sin(math.radians(deg)), 0, math.cos(math.radians(deg))]
+    ])
+
+
+def rot_z(deg: float) -> Matrix3x3:
+    return Matrix3x3([
+        [math.cos(math.radians(deg)), math.sin(math.radians(deg)), 0],
+        [-math.sin(math.radians(deg)), math.cos(math.radians(deg)), 0],
+        [0, 0, 1]
+    ])
