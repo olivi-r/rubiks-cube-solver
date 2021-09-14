@@ -64,6 +64,10 @@ class Vector3(Matrix3x3):
     def k(self, value):
         self.data[2][0] = value
 
+    @property
+    def magnitude(self):
+        return math.sqrt(self.i ** 2 + self.j ** 2 + self.k ** 2)
+
 
 # matrices to rotate a point in 3D space
 def rot_x(deg: float) -> Matrix3x3:
