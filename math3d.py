@@ -84,6 +84,30 @@ class Vector3(Matrix3x3):
         return math.sqrt(self.i ** 2 + self.j ** 2 + self.k ** 2)
 
 
+class Triangle:
+    def __init__(self, p1: Vector3, p2: Vector3, p3: Vector3, col: str):
+        self.p1 = p1
+        self.p2 = p2
+        self.p3 = p3
+        self.col = col
+
+
+class Mesh:
+    triangles = []
+
+    def scale(self, size: float) -> None:
+        for tri in self.triangles:
+            tri.p1 *= size
+            tri.p2 *= size
+            tri.p3 *= size
+
+    def translate(self, delta: Vector3) -> None:
+        for tri in self.triangles:
+            tri.p1 += delta
+            tri.p2 += delta
+            tri.p3 += delta
+
+
 # matrices to rotate a point in 3D space
 def rot_x(deg: float) -> Matrix3x3:
     return Matrix3x3([
@@ -107,10 +131,3 @@ def rot_z(deg: float) -> Matrix3x3:
         [-math.sin(math.radians(deg)), math.cos(math.radians(deg)), 0],
         [0, 0, 1]
     ])
-
-
-class Triangle:
-    def __init__(self, p1: Vector3, p2: Vector3, p3: Vector3):
-        self.p1 = p1
-        self.p2 = p2
-        self.p3 = p3
