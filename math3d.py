@@ -17,10 +17,18 @@ class Matrix3x3:
             new = self.__class__()
             for y in range(3):
                 for x in range(3):
-                    # matrix multiplication (sum(row * col))
+                    # matrix multiplication
                     paired = zip(self.data[y], [i[x] for i in other.data])
-                    value = sum(map(lambda i: i[0] * i[1], paired))
-                    new.data[y][x] = value
+                    new.data[y][x] = sum(map(lambda i: i[0] * i[1], paired))
+
+            return new
+
+        if isinstance(other, (int, float)):
+            new = self.__class__()
+            for y in range(3):
+                for x in range(3):
+                    # scalar multiplication
+                    new.data[y][x] = self.data[y][x] * other
 
             return new
 
@@ -40,6 +48,13 @@ class Vector3(Matrix3x3):
 
         except AssertionError:
             self.data = [[0, 0, 0] for _ in range(3)]
+
+    def __add__(self, other):
+        if isinstance(other, self.__class__):
+            new = self.__class__()
+            new.i = self.i + other.i
+            new.j = self.j + other.j
+            new.k = self.k + other.k
 
     @property
     def i(self):
@@ -92,3 +107,10 @@ def rot_z(deg: float) -> Matrix3x3:
         [-math.sin(math.radians(deg)), math.cos(math.radians(deg)), 0],
         [0, 0, 1]
     ])
+
+
+class Triangle:
+    def __init__(self, p1: Vector3, p2: Vector3, p3: Vector3):
+        self.p1 = p1
+        self.p2 = p2
+        self.p3 = p3
