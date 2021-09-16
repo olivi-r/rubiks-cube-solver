@@ -77,3 +77,40 @@ class Corner(Mesh):
 
         self.scale(width / 2)
         self.translate(pos)
+
+
+class RubiksCube:
+    def __init__(self, pos: Vector3, piece_width: float):
+        white = "#ffffff"
+        yellow = "#ffff00"
+        red = "#ff0000"
+        orange = "#ff2b00"
+        blue = "#0000ff"
+        green = "#00ff00"
+        self.pieces = [
+            [
+                [
+                    Corner(pos + Vector3(piece_width, piece_width, -piece_width), white, red, blue, piece_width)
+                ],
+                [
+                ],
+                [
+                ]
+            ],
+            [
+                [
+                ],
+                [
+                ],
+                [
+                ]
+            ],
+            [
+                [
+                ],
+                [
+                ],
+                [
+                ]
+            ],
+        ]
