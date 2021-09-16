@@ -1,4 +1,4 @@
-from math3d import Camera, Triangle, Vector3
+from math3d import Camera, Triangle, Vector3, rot_x, rot_y
 from cube import RubiksCube
 import pygame
 
@@ -14,12 +14,38 @@ if __name__ == "__main__":
 
     cube = RubiksCube(Vector3(0, 0, 0), 4)
 
+    dragging = False
+
     running = True
     while running:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 # handle close button event
                 running = False
+
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if event.button == 1:
+                    if not dragging:
+                        dragging = True
+                        pygame.mouse.get_rel()
+
+            if event.type == pygame.MOUSEMOTION:
+                if dragging:
+                    mouse_delta = pygame.mouse.get_rel()
+                    for z in cube.pieces:
+                        for y in z:
+                            for piece in y:
+                                for triangle in piece.triangles:
+                                    triangle.p1 = rot_x(mouse_delta[1]) * triangle.p1
+                                    triangle.p2 = rot_x(mouse_delta[1]) * triangle.p2
+                                    triangle.p3 = rot_x(mouse_delta[1]) * triangle.p3
+                                    triangle.p1 = rot_y(mouse_delta[0]) * triangle.p1
+                                    triangle.p2 = rot_y(mouse_delta[0]) * triangle.p2
+                                    triangle.p3 = rot_y(mouse_delta[0]) * triangle.p3
+
+
+            if event.type == pygame.MOUSEBUTTONUP:
+                dragging = False
 
         display.fill(white)
 
@@ -35,7 +61,7 @@ if __name__ == "__main__":
                             triangle.col
                         )
 
-                        if (triangle.p1 - cam.pos).dot(new_triangle.normal) > 0:
+                        if (triangle.p1 - cam.pos).dot(triangle.normal) > 0:
                             # remove faces pointing away from camera
                             continue
 
