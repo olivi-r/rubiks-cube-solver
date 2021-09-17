@@ -137,6 +137,12 @@ class Mesh:
             tri.p2 += delta
             tri.p3 += delta
 
+    def rotate(self, angle: Matrix3x3) -> None:
+        for tri in self.triangles:
+            tri.p1 = angle * tri.p1
+            tri.p2 = angle * tri.p2
+            tri.p3 = angle * tri.p3
+
 
 class Camera:
     def __init__(self, pos: Vector3, rot: Vector3, near_clip):

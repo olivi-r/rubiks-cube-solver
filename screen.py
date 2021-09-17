@@ -35,13 +35,9 @@ if __name__ == "__main__":
                     for z in cube.pieces:
                         for y in z:
                             for piece in y:
-                                for triangle in piece.triangles:
-                                    triangle.p1 = rot_x(mouse_delta[1]) * triangle.p1
-                                    triangle.p2 = rot_x(mouse_delta[1]) * triangle.p2
-                                    triangle.p3 = rot_x(mouse_delta[1]) * triangle.p3
-                                    triangle.p1 = rot_y(mouse_delta[0]) * triangle.p1
-                                    triangle.p2 = rot_y(mouse_delta[0]) * triangle.p2
-                                    triangle.p3 = rot_y(mouse_delta[0]) * triangle.p3
+                                if piece is not None:
+                                    piece.rotate(rot_x(mouse_delta[1]))
+                                    piece.rotate(rot_y(mouse_delta[0]))
 
 
             if event.type == pygame.MOUSEBUTTONUP:
@@ -52,6 +48,9 @@ if __name__ == "__main__":
         for z in cube.pieces:
             for y in z:
                 for piece in y:
+                    if piece is None:
+                        continue
+
                     for triangle in piece.triangles:
                         # convert world space triangle to camera space
                         new_triangle = Triangle(
