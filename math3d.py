@@ -103,6 +103,9 @@ class Vector3(Matrix3x3):
         except AttributeError:
             return 0
 
+    def copy(self) -> object:
+        return self.__class__(self.i, self.j, self.k)
+
 
 class Triangle:
     def __init__(self, p1: Vector3, p2: Vector3, p3: Vector3, col: str):

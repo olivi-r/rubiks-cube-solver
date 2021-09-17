@@ -23,6 +23,17 @@ class Center(Mesh):
         self.scale(width / 2)
         self.translate(pos)
 
+        self.width = width
+        self.pos = pos
+
+    def copy(self) -> object:
+        new = self.__class__(self.pos, self.col, self.width)
+        new.triangles = []
+        for tri in self.triangles:
+            new.triangles.append(Triangle(tri.p1.copy(), tri.p2.copy(), tri.p3.copy(), tri.col))
+
+        return new
+
 
 class Edge(Mesh):
     def __init__(self, pos: Vector3, col1: str, col2: str, width: float):
@@ -47,6 +58,17 @@ class Edge(Mesh):
 
         self.scale(width / 2)
         self.translate(pos)
+
+        self.width = width
+        self.pos = pos
+
+    def copy(self) -> object:
+        new = self.__class__(self.pos, self.col1, self.col2, self.width)
+        new.triangles = []
+        for tri in self.triangles:
+            new.triangles.append(Triangle(tri.p1.copy(), tri.p2.copy(), tri.p3.copy(), tri.col))
+
+        return new
 
 
 class Corner(Mesh):
@@ -77,6 +99,17 @@ class Corner(Mesh):
 
         self.scale(width / 2)
         self.translate(pos)
+
+        self.width = width
+        self.pos = pos
+
+    def copy(self) -> object:
+        new = self.__class__(self.pos, self.col1, self.col2, self.col3, self.width)
+        new.triangles = []
+        for tri in self.triangles:
+            new.triangles.append(Triangle(tri.p1.copy(), tri.p2.copy(), tri.p3.copy(), tri.col))
+
+        return new
 
 
 class RubiksCube:
@@ -181,17 +214,89 @@ class RubiksCube:
     def rotate_front(self):
         [self.pieces[0][i][j].rotate(rot_z(90)) for i in range(3) for j in range(3)]
 
+        # update tracked positions
+        tmp = self.pieces[0][0][0]
+        self.pieces[0][0][0] = self.pieces[0][0][2]
+        self.pieces[0][0][2] = self.pieces[0][2][2]
+        self.pieces[0][2][2] = self.pieces[0][2][0]
+        self.pieces[0][2][0] = tmp
+        tmp = self.pieces[0][0][1]
+        self.pieces[0][0][1] = self.pieces[0][1][2]
+        self.pieces[0][1][2] = self.pieces[0][2][1]
+        self.pieces[0][2][1] = self.pieces[0][1][0]
+        self.pieces[0][1][0] = tmp
+
     def rotate_back(self):
         [self.pieces[2][i][j].rotate(rot_z(-90)) for i in range(3) for j in range(3)]
+
+        # update tracked positions
+        tmp = self.pieces[2][0][2]
+        self.pieces[2][0][2] = self.pieces[2][0][0]
+        self.pieces[2][0][0] = self.pieces[2][2][0]
+        self.pieces[2][2][0] = self.pieces[2][2][2]
+        self.pieces[2][2][2] = tmp
+        tmp = self.pieces[2][0][1]
+        self.pieces[2][0][1] = self.pieces[2][1][0]
+        self.pieces[2][1][0] = self.pieces[2][2][1]
+        self.pieces[2][2][1] = self.pieces[2][1][2]
+        self.pieces[2][1][2] = tmp
 
     def rotate_right(self):
         [self.pieces[i][j][2].rotate(rot_x(-90)) for i in range(3) for j in range(3)]
 
+        # update tracked positions
+        tmp = self.pieces[0][0][2]
+        self.pieces[0][0][2] = self.pieces[2][0][2]
+        self.pieces[2][0][2] = self.pieces[2][2][2]
+        self.pieces[2][2][2] = self.pieces[0][2][2]
+        self.pieces[0][2][2] = tmp
+        tmp = self.pieces[1][0][2]
+        self.pieces[1][0][2] = self.pieces[2][1][2]
+        self.pieces[2][1][2] = self.pieces[1][2][2]
+        self.pieces[1][2][2] = self.pieces[0][1][2]
+        self.pieces[0][1][2] = tmp
+
     def rotate_left(self):
         [self.pieces[i][j][0].rotate(rot_x(90)) for i in range(3) for j in range(3)]
+
+        # update tracked positions
+        tmp = self.pieces[2][0][0]
+        self.pieces[2][0][0] = self.pieces[0][0][0]
+        self.pieces[0][0][0] = self.pieces[0][2][0]
+        self.pieces[0][2][0] = self.pieces[2][2][0]
+        self.pieces[2][2][0] = tmp
+        tmp = self.pieces[1][0][0]
+        self.pieces[1][0][0] = self.pieces[0][1][0]
+        self.pieces[0][1][0] = self.pieces[1][2][0]
+        self.pieces[1][2][0] = self.pieces[2][1][0]
+        self.pieces[2][1][0] = tmp
 
     def rotate_up(self):
         [self.pieces[i][2][j].rotate(rot_y(-90)) for i in range(3) for j in range(3)]
 
+        # update tracked positions
+        tmp = self.pieces[0][2][0]
+        self.pieces[0][2][0] = self.pieces[0][2][2]
+        self.pieces[0][2][2] = self.pieces[2][2][2]
+        self.pieces[2][2][2] = self.pieces[2][2][0]
+        self.pieces[2][2][0] = tmp
+        tmp = self.pieces[0][2][1]
+        self.pieces[0][2][1] = self.pieces[1][2][2]
+        self.pieces[1][2][2] = self.pieces[2][2][1]
+        self.pieces[2][2][1] = self.pieces[1][2][0]
+        self.pieces[1][2][0] = tmp
+
     def rotate_down(self):
         [self.pieces[i][0][j].rotate(rot_y(90)) for i in range(3) for j in range(3)]
+
+        # update tracked positions
+        tmp = self.pieces[2][0][0]
+        self.pieces[2][0][0] = self.pieces[2][0][2]
+        self.pieces[2][0][2] = self.pieces[0][0][2]
+        self.pieces[0][0][2] = self.pieces[0][0][0]
+        self.pieces[0][0][0] = tmp
+        tmp = self.pieces[2][0][1]
+        self.pieces[2][0][1] = self.pieces[1][0][2]
+        self.pieces[1][0][2] = self.pieces[0][0][1]
+        self.pieces[0][0][1] = self.pieces[1][0][0]
+        self.pieces[1][0][0] = tmp
