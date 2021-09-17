@@ -177,3 +177,21 @@ class RubiksCube:
         self.pieces[2][2][0].rotate(rot_y(180))
         self.pieces[2][2][1].rotate(rot_y(180))
         self.pieces[2][2][2].rotate(rot_y(90))
+
+    def rotate_front(self):
+        [self.pieces[0][i][j].rotate(rot_z(90)) for i in range(3) for j in range(3)]
+
+    def rotate_back(self):
+        [self.pieces[2][i][j].rotate(rot_z(-90)) for i in range(3) for j in range(3)]
+
+    def rotate_right(self):
+        [self.pieces[i][j][2].rotate(rot_x(-90)) for i in range(3) for j in range(3)]
+
+    def rotate_left(self):
+        [self.pieces[i][j][0].rotate(rot_x(90)) for i in range(3) for j in range(3)]
+
+    def rotate_up(self):
+        [self.pieces[i][2][j].rotate(rot_y(-90)) for i in range(3) for j in range(3)]
+
+    def rotate_down(self):
+        [self.pieces[i][0][j].rotate(rot_y(90)) for i in range(3) for j in range(3)]
