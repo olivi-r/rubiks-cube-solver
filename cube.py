@@ -113,190 +113,190 @@ class Corner(Mesh):
 
 
 class RubiksCube:
-    def __init__(self, pos: Vector3, piece_width: float):
+    def __init__(self, width: float, layers: int):
         white = "#ffffff"
         yellow = "#ffff00"
         red = "#ff0000"
         orange = "#ff6f00"
         blue = "#0000ff"
         green = "#00ff00"
-        self.pieces = [
-            [
-                [
-                    Corner(pos + Vector3(piece_width, piece_width, -piece_width), yellow, red, green, piece_width),
-                    Edge(pos + Vector3(0, piece_width, -piece_width), yellow, red, piece_width),
-                    Corner(pos + Vector3(piece_width, piece_width, -piece_width), blue, red, yellow, piece_width)
-                ],
-                [
-                    Edge(pos + Vector3(0, piece_width, -piece_width), green, red, piece_width),
-                    Center(pos + Vector3(0, piece_width, 0), red, piece_width),
-                    Edge(pos + Vector3(0, piece_width, -piece_width), blue, red, piece_width)
-                ],
-                [
-                    Corner(pos + Vector3(piece_width, piece_width, -piece_width), white, green, red, piece_width),
-                    Edge(pos + Vector3(0, piece_width, -piece_width), white, red, piece_width),
-                    Corner(pos + Vector3(piece_width, piece_width, -piece_width), white, red, blue, piece_width)
-                ]
-            ],
-            [
-                [
-                    Edge(pos + Vector3(0, piece_width, -piece_width), yellow, green, piece_width),
-                    Center(pos + Vector3(0, piece_width, 0), yellow, piece_width),
-                    Edge(pos + Vector3(0, piece_width, -piece_width), yellow, blue, piece_width)
-                ],
-                [
-                    Center(pos + Vector3(0, piece_width, 0), green, piece_width),
-                    None,
-                    Center(pos + Vector3(0, piece_width, 0), blue, piece_width)
-                ],
-                [
-                    Edge(pos + Vector3(0, piece_width, -piece_width), white, green, piece_width),
-                    Center(pos + Vector3(0, piece_width, 0), white, piece_width),
-                    Edge(pos + Vector3(0, piece_width, -piece_width), white, blue, piece_width)
-                ]
-            ],
-            [
-                [
-                    Corner(pos + Vector3(piece_width, piece_width, -piece_width), green, orange, yellow, piece_width),
-                    Edge(pos + Vector3(0, piece_width, -piece_width), yellow, orange, piece_width),
-                    Corner(pos + Vector3(piece_width, piece_width, -piece_width), yellow, orange, blue, piece_width)
-                ],
-                [
-                    Edge(pos + Vector3(0, piece_width, -piece_width), green, orange, piece_width),
-                    Center(pos + Vector3(0, piece_width, 0), orange, piece_width),
-                    Edge(pos + Vector3(0, piece_width, -piece_width), blue, orange, piece_width)
-                ],
-                [
-                    Corner(pos + Vector3(piece_width, piece_width, -piece_width), white, orange, green, piece_width),
-                    Edge(pos + Vector3(0, piece_width, -piece_width), white, orange, piece_width),
-                    Corner(pos + Vector3(piece_width, piece_width, -piece_width), white, blue, orange, piece_width)
-                ]
-            ],
-        ]
 
-        # rotate pieces into place
-        # front
-        self.pieces[0][0][0].rotate(rot_z(180))
-        self.pieces[0][0][1].rotate(rot_z(180))
-        self.pieces[0][0][2].rotate(rot_z(90))
-        self.pieces[0][1][0].rotate(rot_z(-90))
-        self.pieces[0][1][1].rotate(rot_x(90))
-        self.pieces[0][1][2].rotate(rot_z(90))
-        self.pieces[0][2][0].rotate(rot_y(-90))
+        layers = int(layers)
 
-        # middle
-        self.pieces[1][0][0].rotate(rot_y(-90))
-        self.pieces[1][0][0].rotate(rot_x(180))
-        self.pieces[1][0][1].rotate(rot_z(180))
-        self.pieces[1][0][2].rotate(rot_y(90))
-        self.pieces[1][0][2].rotate(rot_x(180))
-        self.pieces[1][1][0].rotate(rot_z(-90))
-        self.pieces[1][1][2].rotate(rot_z(90))
-        self.pieces[1][2][0].rotate(rot_y(-90))
-        self.pieces[1][2][2].rotate(rot_y(90))
+        try:
+            assert layers > 1
+            assert isinstance(width, (int, float))
 
-        # back
-        self.pieces[2][0][0].rotate(rot_y(180))
-        self.pieces[2][0][0].rotate(rot_z(-90))
-        self.pieces[2][0][1].rotate(rot_y(180))
-        self.pieces[2][0][1].rotate(rot_z(180))
-        self.pieces[2][0][2].rotate(rot_y(180))
-        self.pieces[2][0][2].rotate(rot_z(180))
-        self.pieces[2][1][0].rotate(rot_y(180))
-        self.pieces[2][1][0].rotate(rot_z(-90))
-        self.pieces[2][1][1].rotate(rot_x(-90))
-        self.pieces[2][1][2].rotate(rot_y(180))
-        self.pieces[2][1][2].rotate(rot_z(90))
-        self.pieces[2][2][0].rotate(rot_y(180))
-        self.pieces[2][2][1].rotate(rot_y(180))
-        self.pieces[2][2][2].rotate(rot_y(90))
+        except AssertionError:
+            layers = 2
+            width = 12
 
-    def rotate_front(self):
-        [self.pieces[0][i][j].rotate(rot_z(90)) for i in range(3) for j in range(3)]
+        piece_width = width / layers
 
-        # update tracked positions
-        tmp = self.pieces[0][0][0]
-        self.pieces[0][0][0] = self.pieces[0][0][2]
-        self.pieces[0][0][2] = self.pieces[0][2][2]
-        self.pieces[0][2][2] = self.pieces[0][2][0]
-        self.pieces[0][2][0] = tmp
-        tmp = self.pieces[0][0][1]
-        self.pieces[0][0][1] = self.pieces[0][1][2]
-        self.pieces[0][1][2] = self.pieces[0][2][1]
-        self.pieces[0][2][1] = self.pieces[0][1][0]
-        self.pieces[0][1][0] = tmp
+        e = 0 if layers % 2 else piece_width / 2
+        o = layers // 2
+        delta = piece_width * o - e
 
-    def rotate_back(self):
-        [self.pieces[2][i][j].rotate(rot_z(-90)) for i in range(3) for j in range(3)]
+        edge_align = 0 if layers % 2 else 0.5
+        # delta_edge = (o - x - edge_align) * piece_width
+        d_edge = piece_width * o - piece_width * edge_align
 
-        # update tracked positions
-        tmp = self.pieces[2][0][2]
-        self.pieces[2][0][2] = self.pieces[2][0][0]
-        self.pieces[2][0][0] = self.pieces[2][2][0]
-        self.pieces[2][2][0] = self.pieces[2][2][2]
-        self.pieces[2][2][2] = tmp
-        tmp = self.pieces[2][0][1]
-        self.pieces[2][0][1] = self.pieces[2][1][0]
-        self.pieces[2][1][0] = self.pieces[2][2][1]
-        self.pieces[2][2][1] = self.pieces[2][1][2]
-        self.pieces[2][1][2] = tmp
+        self.pieces = []
+        for z in range(layers):
+            z_layer = []
+            for y in range(layers):
+                y_layer = []
+                for x in range(layers):
+                    if z == 0:
+                        if y == 0:
+                            if x == 0:
+                                # front bottom left corner
+                                y_layer.append(Corner(Vector3(delta, delta, -delta), yellow, red, green, piece_width))
+                                y_layer[-1].rotate(rot_z(180))
 
-    def rotate_right(self):
-        [self.pieces[i][j][2].rotate(rot_x(-90)) for i in range(3) for j in range(3)]
+                            elif x == layers - 1:
+                                # front bottom right corner
+                                y_layer.append(Corner(Vector3(delta, delta, -delta), blue, red, yellow, piece_width))
+                                y_layer[-1].rotate(rot_z(90))
 
-        # update tracked positions
-        tmp = self.pieces[0][0][2]
-        self.pieces[0][0][2] = self.pieces[2][0][2]
-        self.pieces[2][0][2] = self.pieces[2][2][2]
-        self.pieces[2][2][2] = self.pieces[0][2][2]
-        self.pieces[0][2][2] = tmp
-        tmp = self.pieces[1][0][2]
-        self.pieces[1][0][2] = self.pieces[2][1][2]
-        self.pieces[2][1][2] = self.pieces[1][2][2]
-        self.pieces[1][2][2] = self.pieces[0][1][2]
-        self.pieces[0][1][2] = tmp
+                            else:
+                                # front bottom edges
+                                y_layer.append(Edge(Vector3(d_edge - x * piece_width, delta, -delta), yellow, red, piece_width))
+                                y_layer[-1].rotate(rot_z(180))
 
-    def rotate_left(self):
-        [self.pieces[i][j][0].rotate(rot_x(90)) for i in range(3) for j in range(3)]
+                        elif y == layers - 1:
+                            if x == 0:
+                                # front top left corner
+                                y_layer.append(Corner(Vector3(delta, delta, -delta), white, green, red, piece_width))
+                                y_layer[-1].rotate(rot_y(-90))
 
-        # update tracked positions
-        tmp = self.pieces[2][0][0]
-        self.pieces[2][0][0] = self.pieces[0][0][0]
-        self.pieces[0][0][0] = self.pieces[0][2][0]
-        self.pieces[0][2][0] = self.pieces[2][2][0]
-        self.pieces[2][2][0] = tmp
-        tmp = self.pieces[1][0][0]
-        self.pieces[1][0][0] = self.pieces[0][1][0]
-        self.pieces[0][1][0] = self.pieces[1][2][0]
-        self.pieces[1][2][0] = self.pieces[2][1][0]
-        self.pieces[2][1][0] = tmp
+                            elif x == layers - 1:
+                                # front top right corner
+                                y_layer.append(Corner(Vector3(delta, delta, -delta), white, red, blue, piece_width))
 
-    def rotate_up(self):
-        [self.pieces[i][2][j].rotate(rot_y(-90)) for i in range(3) for j in range(3)]
+                            else:
+                                # front top edges
+                                y_layer.append(Edge(Vector3(x * piece_width - d_edge, delta, -delta), white, red, piece_width))
 
-        # update tracked positions
-        tmp = self.pieces[0][2][0]
-        self.pieces[0][2][0] = self.pieces[0][2][2]
-        self.pieces[0][2][2] = self.pieces[2][2][2]
-        self.pieces[2][2][2] = self.pieces[2][2][0]
-        self.pieces[2][2][0] = tmp
-        tmp = self.pieces[0][2][1]
-        self.pieces[0][2][1] = self.pieces[1][2][2]
-        self.pieces[1][2][2] = self.pieces[2][2][1]
-        self.pieces[2][2][1] = self.pieces[1][2][0]
-        self.pieces[1][2][0] = tmp
+                        else:
+                            if x == 0:
+                                # front middle left edges
+                                y_layer.append(Edge(Vector3(y * piece_width - d_edge, delta, -delta), green, red, piece_width))
+                                y_layer[-1].rotate(rot_z(-90))
 
-    def rotate_down(self):
-        [self.pieces[i][0][j].rotate(rot_y(90)) for i in range(3) for j in range(3)]
+                            elif x == layers - 1:
+                                # front middle right edges
+                                y_layer.append(Edge(Vector3(d_edge - y * piece_width, delta, -delta), blue, red, piece_width))
+                                y_layer[-1].rotate(rot_z(90))
 
-        # update tracked positions
-        tmp = self.pieces[2][0][0]
-        self.pieces[2][0][0] = self.pieces[2][0][2]
-        self.pieces[2][0][2] = self.pieces[0][0][2]
-        self.pieces[0][0][2] = self.pieces[0][0][0]
-        self.pieces[0][0][0] = tmp
-        tmp = self.pieces[2][0][1]
-        self.pieces[2][0][1] = self.pieces[1][0][2]
-        self.pieces[1][0][2] = self.pieces[0][0][1]
-        self.pieces[0][0][1] = self.pieces[1][0][0]
-        self.pieces[1][0][0] = tmp
+                            else:
+                                # front center
+                                y_layer.append(Center(Vector3(x * piece_width - d_edge, delta, y * piece_width - d_edge), red, piece_width))
+                                y_layer[-1].rotate(rot_x(90))
+
+                    elif z == layers - 1:
+                        if y == 0:
+                            if x == 0:
+                                # back bottom left corner
+                                y_layer.append(Corner(Vector3(delta, delta, -delta), yellow, green, orange, piece_width))
+                                y_layer[-1].rotate(rot_z(180))
+                                y_layer[-1].rotate(rot_y(-90))
+
+                            elif x == layers - 1:
+                                # back bottom right corner
+                                y_layer.append(Corner(Vector3(delta, delta, -delta), yellow, orange, blue, piece_width))
+                                y_layer[-1].rotate(rot_z(180))
+                                y_layer[-1].rotate(rot_y(180))
+
+                            else:
+                                # back bottom edges
+                                y_layer.append(Edge(Vector3(x * piece_width - d_edge, delta, -delta), yellow, orange, piece_width))
+                                y_layer[-1].rotate(rot_z(180))
+                                y_layer[-1].rotate(rot_y(180))
+
+                        elif y == layers - 1:
+                            if x == 0:
+                                # back top left corner
+                                y_layer.append(Corner(Vector3(delta, delta, -delta), white, orange, green, piece_width))
+                                y_layer[-1].rotate(rot_y(180))
+
+                            elif x == layers - 1:
+                                # back top right corner
+                                y_layer.append(Corner(Vector3(delta, delta, -delta), white, blue, orange, piece_width))
+                                y_layer[-1].rotate(rot_y(90))
+
+                            else:
+                                # back top edges
+                                y_layer.append(Edge(Vector3(d_edge - x * piece_width, delta, -delta), white, orange, piece_width))
+                                y_layer[-1].rotate(rot_y(180))
+
+                        else:
+                            if x == 0:
+                                # back left edges
+                                y_layer.append(Edge(Vector3(d_edge - y * piece_width, delta, -delta), green, orange, piece_width))
+                                y_layer[-1].rotate(rot_z(90))
+                                y_layer[-1].rotate(rot_y(180))
+
+                            elif x == layers - 1:
+                                # back right edges
+                                y_layer.append(Edge(Vector3(y * piece_width - d_edge, delta, -delta), blue, orange, piece_width))
+                                y_layer[-1].rotate(rot_z(-90))
+                                y_layer[-1].rotate(rot_y(180))
+
+                            else:
+                                # back center
+                                y_layer.append(Center(Vector3(x * piece_width - d_edge, delta, d_edge - y * piece_width), orange, piece_width))
+                                y_layer[-1].rotate(rot_x(-90))
+
+                    else:
+                        if y == 0:
+                            if x == 0:
+                                # middle bottom left edges
+                                y_layer.append(Edge(Vector3(z * piece_width - d_edge, delta, -delta), yellow, green, piece_width))
+                                y_layer[-1].rotate(rot_z(180))
+                                y_layer[-1].rotate(rot_y(-90))
+
+                            elif x == layers - 1:
+                                # middle bottom right edges
+                                y_layer.append(Edge(Vector3(d_edge - z * piece_width, delta, -delta), yellow, blue, piece_width))
+                                y_layer[-1].rotate(rot_z(180))
+                                y_layer[-1].rotate(rot_y(90))
+
+                            else:
+                                # bottom center
+                                y_layer.append(Center(Vector3(d_edge - x * piece_width, delta, z * piece_width - d_edge), yellow, piece_width))
+                                y_layer[-1].rotate(rot_z(180))
+
+                        elif y == layers - 1:
+                            if x == 0:
+                                # middle top left edges
+                                y_layer.append(Edge(Vector3(d_edge - z * piece_width, delta, -delta), white, green, piece_width))
+                                y_layer[-1].rotate(rot_y(-90))
+
+                            elif x == layers - 1:
+                                # middle top right edges
+                                y_layer.append(Edge(Vector3(z * piece_width - d_edge, delta, -delta), white, blue, piece_width))
+                                y_layer[-1].rotate(rot_y(90))
+
+                            else:
+                                # top center
+                                y_layer.append(Center(Vector3(x * piece_width - d_edge, delta, z * piece_width - d_edge), white, piece_width))
+
+                        else:
+                            if x == 0:
+                                # left center
+                                y_layer.append(Center(Vector3(y * piece_width - d_edge, delta, z * piece_width - d_edge), green, piece_width))
+                                y_layer[-1].rotate(rot_z(-90))
+
+                            elif x == layers - 1:
+                                # right center
+                                y_layer.append(Center(Vector3(d_edge - y * piece_width, delta, z * piece_width - d_edge), blue, piece_width))
+                                y_layer[-1].rotate(rot_z(90))
+
+                            else:
+                                # interior pieces
+                                y_layer.append(None)
+
+                z_layer.append(y_layer)
+
+            self.pieces.append(z_layer)

@@ -12,7 +12,6 @@ def bubble_sort(to_sort: list) -> None:
             try:
                 if val[0] > to_sort[i + 1][0]:
                     to_sort[i], to_sort[i + 1] = to_sort[i + 1], to_sort[i]
-                    # to_sort[i : i + 1] = reversed(to_sort[i + 1 : i - 1])
                     swapped = True
 
             except IndexError:
@@ -28,7 +27,7 @@ if __name__ == "__main__":
 
     cam = Camera(Vector3(0, 0, -30), Vector3(0, 0, 0), 0.1)
 
-    cube = RubiksCube(Vector3(0, 0, 0), 4)
+    cube = RubiksCube(12, 5)
 
     global_rotation = Matrix3x3([[1, 0, 0], [0, 1, 0], [0, 0, 1]])
 
@@ -40,25 +39,6 @@ if __name__ == "__main__":
             if event.type == pygame.QUIT:
                 # handle close button event
                 running = False
-
-            if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_b:
-                    cube.rotate_back()
-
-                if event.key == pygame.K_f:
-                    cube.rotate_front()
-
-                if event.key == pygame.K_r:
-                    cube.rotate_right()
-
-                if event.key == pygame.K_l:
-                    cube.rotate_left()
-
-                if event.key == pygame.K_u:
-                    cube.rotate_up()
-
-                if event.key == pygame.K_d:
-                    cube.rotate_down()
 
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if event.button == 1:
