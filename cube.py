@@ -122,6 +122,7 @@ class RubiksCube:
         green = "#00ff00"
 
         layers = int(layers)
+        self.layers = layers
 
         try:
             assert layers > 1
@@ -300,3 +301,118 @@ class RubiksCube:
                 z_layer.append(y_layer)
 
             self.pieces.append(z_layer)
+
+    def rotate(self, pattern: str) -> None:
+        if pattern == "F":
+            # rotate pieces in scene
+            [self.pieces[0][i][j].rotate(rot_z(90)) for i in range(self.layers) for j in range(self.layers)]
+
+            # update corner positions
+            tmp = self.pieces[0][0][0]
+            self.pieces[0][0][0] = self.pieces[0][0][self.layers - 1]
+            self.pieces[0][0][self.layers - 1] = self.pieces[0][self.layers - 1][self.layers - 1]
+            self.pieces[0][self.layers - 1][self.layers - 1] = self.pieces[0][self.layers - 1][0]
+            self.pieces[0][self.layers - 1][0] = tmp
+
+            # update edge positions
+            for i in range(1, self.layers - 1):
+                tmp = self.pieces[0][0][i]
+                self.pieces[0][0][i] = self.pieces[0][i][self.layers - 1]
+                self.pieces[0][i][self.layers - 1] = self.pieces[0][self.layers - 1][self.layers - i - 1]
+                self.pieces[0][self.layers - 1][self.layers - i - 1] = self.pieces[0][self.layers - i - 1][0]
+                self.pieces[0][self.layers - i - 1][0] = tmp
+
+        elif pattern == "B":
+            # rotate pieces in scene
+            [self.pieces[self.layers - 1][i][j].rotate(rot_z(-90)) for i in range(self.layers) for j in range(self.layers)]
+
+            # update corner positions
+            tmp = self.pieces[self.layers - 1][0][self.layers - 1]
+            self.pieces[self.layers - 1][0][self.layers - 1] = self.pieces[self.layers - 1][0][0]
+            self.pieces[self.layers - 1][0][0] = self.pieces[self.layers - 1][self.layers - 1][0]
+            self.pieces[self.layers - 1][self.layers - 1][0] = self.pieces[self.layers - 1][self.layers - 1][self.layers - 1]
+            self.pieces[self.layers - 1][self.layers - 1][self.layers - 1] = tmp
+
+            # update edge positions
+            for i in range(1, self.layers - 1):
+                tmp = self.pieces[self.layers - 1][0][self.layers - i - 1]
+                self.pieces[self.layers - 1][0][self.layers - i - 1] = self.pieces[self.layers - 1][i][0]
+                self.pieces[self.layers - 1][i][0] = self.pieces[self.layers - 1][self.layers - 1][self.layers - i - 1]
+                self.pieces[self.layers - 1][self.layers - 1][self.layers - i - 1] = self.pieces[self.layers - 1][self.layers - i - 1][self.layers - 1]
+                self.pieces[self.layers - 1][self.layers - i - 1][self.layers - 1] = tmp
+
+        elif pattern == "R":
+            # rotate pieces in scene
+            [self.pieces[i][j][self.layers - 1].rotate(rot_x(-90)) for i in range(self.layers) for j in range(self.layers)]
+
+            # update corner positions
+            tmp = self.pieces[0][0][self.layers - 1]
+            self.pieces[0][0][self.layers - 1] = self.pieces[self.layers - 1][0][self.layers - 1]
+            self.pieces[self.layers - 1][0][self.layers - 1] = self.pieces[self.layers - 1][self.layers - 1][self.layers - 1]
+            self.pieces[self.layers - 1][self.layers - 1][self.layers - 1] = self.pieces[0][self.layers - 1][self.layers - 1]
+            self.pieces[0][self.layers - 1][self.layers - 1] = tmp
+
+            # update edge positions
+            for i in range(1, self.layers - 1):
+                tmp = self.pieces[i][0][self.layers - 1]
+                self.pieces[i][0][self.layers - 1] = self.pieces[self.layers - 1][i][self.layers - 1]
+                self.pieces[self.layers - 1][i][self.layers - 1] = self.pieces[self.layers - i - 1][self.layers - 1][self.layers - 1]
+                self.pieces[self.layers - i - 1][self.layers - 1][self.layers - 1] = self.pieces[0][self.layers - i - 1][self.layers - 1]
+                self.pieces[0][self.layers - i - 1][self.layers - 1] = tmp
+
+        elif pattern == "L":
+            # rotate pieces in scene
+            [self.pieces[i][j][0].rotate(rot_x(90)) for i in range(self.layers) for j in range(self.layers)]
+
+            # update corner positions
+            tmp = self.pieces[self.layers - 1][0][0]
+            self.pieces[self.layers - 1][0][0] = self.pieces[0][0][0]
+            self.pieces[0][0][0] = self.pieces[0][self.layers - 1][0]
+            self.pieces[0][self.layers - 1][0] = self.pieces[self.layers - 1][self.layers - 1][0]
+            self.pieces[self.layers - 1][self.layers - 1][0] = tmp
+
+            # update edge positions
+            for i in range(1, self.layers - 1):
+                tmp = self.pieces[self.layers - i - 1][0][0]
+                self.pieces[self.layers - i - 1][0][0] = self.pieces[0][i][0]
+                self.pieces[0][i][0] = self.pieces[i][self.layers - 1][0]
+                self.pieces[i][self.layers - 1][0] = self.pieces[self.layers - 1][self.layers - i - 1][0]
+                self.pieces[self.layers - 1][self.layers - i - 1][0] = tmp
+
+        elif pattern == "U":
+            # rotate pieces in scene
+            [self.pieces[i][self.layers - 1][j].rotate(rot_y(-90)) for i in range(self.layers) for j in range(self.layers)]
+
+            # update corner positions
+            tmp = self.pieces[0][self.layers - 1][0]
+            self.pieces[0][self.layers - 1][0] = self.pieces[0][self.layers - 1][self.layers - 1]
+            self.pieces[0][self.layers - 1][self.layers - 1] = self.pieces[self.layers - 1][self.layers - 1][self.layers - 1]
+            self.pieces[self.layers - 1][self.layers - 1][self.layers - 1] = self.pieces[self.layers - 1][self.layers - 1][0]
+            self.pieces[self.layers - 1][self.layers - 1][0] = tmp
+
+            # update edge positions
+            for i in range(1, self.layers - 1):
+                tmp = self.pieces[0][self.layers - 1][i]
+                self.pieces[0][self.layers - 1][i] = self.pieces[i][self.layers - 1][self.layers - 1]
+                self.pieces[i][self.layers - 1][self.layers - 1] = self.pieces[self.layers - 1][self.layers - 1][self.layers - i - 1]
+                self.pieces[self.layers - 1][self.layers - 1][self.layers - i - 1] = self.pieces[self.layers - i - 1][self.layers - 1][0]
+                self.pieces[self.layers - i - 1][self.layers - 1][0] = tmp
+
+        elif pattern == "D":
+            # rotate pieces in scene
+            [self.pieces[i][0][j].rotate(rot_y(90)) for i in range(self.layers) for j in range(self.layers)]
+
+            # update corner positions
+            tmp = self.pieces[self.layers - 1][0][0]
+            self.pieces[self.layers - 1][0][0] = self.pieces[self.layers - 1][0][self.layers - 1]
+            self.pieces[self.layers - 1][0][self.layers - 1] = self.pieces[0][0][self.layers - 1]
+            self.pieces[0][0][self.layers - 1] = self.pieces[0][0][0]
+            self.pieces[0][0][0] = tmp
+
+            # update edge positions
+            for i in range(1, self.layers - 1):
+                tmp = self.pieces[self.layers - 1][0][i]
+                self.pieces[self.layers - 1][0][i] = self.pieces[self.layers - i - 1][0][self.layers - 1]
+                self.pieces[self.layers - i - 1][0][self.layers - 1] = self.pieces[0][0][self.layers - i - 1]
+                self.pieces[0][0][self.layers - i - 1] = self.pieces[i][0][0]
+                self.pieces[i][0][0] = tmp
