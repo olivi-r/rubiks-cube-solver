@@ -416,3 +416,11 @@ class RubiksCube:
                 self.pieces[self.layers - i - 1][0][self.layers - 1] = self.pieces[0][0][self.layers - i - 1]
                 self.pieces[0][0][self.layers - i - 1] = self.pieces[i][0][0]
                 self.pieces[i][0][0] = tmp
+
+        elif pattern.endswith("'"):
+            # reverse patterns, anti-clockwise instead of clockwise
+            [self.rotate(pattern[:-1]) for _ in range(3)]
+
+        elif pattern.endswith("2"):
+            # 180 degree turn
+            [self.rotate(pattern[:-1]) for _ in range(2)]
