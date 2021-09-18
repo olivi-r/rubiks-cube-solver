@@ -2,8 +2,24 @@ from math3d import Camera, Matrix3x3, Triangle, Vector3, rot_x, rot_y
 from cube import RubiksCube
 import pygame
 
+
+def bubble_sort(to_sort: list) -> None:
+    # sort list in-place w/ bubble sort algorithm
+    swapped = True
+    while swapped:
+        swapped = False
+        for i, val in enumerate(to_sort):
+            try:
+                if val[0] > to_sort[i + 1][0]:
+                    to_sort[i], to_sort[i + 1] = to_sort[i + 1], to_sort[i]
+                    # to_sort[i : i + 1] = reversed(to_sort[i + 1 : i - 1])
+                    swapped = True
+
+            except IndexError:
+                break
+
+
 dimensions = [800, 450]
-white = (255, 255, 255)
 
 
 if __name__ == "__main__":
@@ -60,8 +76,9 @@ if __name__ == "__main__":
             if event.type == pygame.MOUSEBUTTONUP:
                 dragging = False
 
-        display.fill(white)
+        display.fill((255, 255, 255))
 
+        to_draw = []
         for z in cube.pieces:
             for y in z:
                 for piece in y:
@@ -71,6 +88,10 @@ if __name__ == "__main__":
                     tmp_piece = piece.copy()
                     tmp_piece.rotate(global_rotation)
                     for triangle in tmp_piece.triangles:
+                        if (triangle.p1 - cam.pos).dot(triangle.normal) > 0:
+                            # remove faces pointing away from camera
+                            continue
+
                         # convert world space triangle to camera space
                         new_triangle = Triangle(
                             cam.world_to_camera(triangle.p1),
@@ -79,20 +100,26 @@ if __name__ == "__main__":
                             triangle.col
                         )
 
-                        if (triangle.p1 - cam.pos).dot(triangle.normal) > 0:
-                            # remove faces pointing away from camera
-                            continue
+                        # get the average distance of the camera space triangle from the camera
+                        avg_depth = new_triangle.p1.magnitude
+                        avg_depth += new_triangle.p2.magnitude
+                        avg_depth += new_triangle.p3.magnitude
+                        avg_depth /= 3
 
-                        # project 3D camera space points to 2D plane
-                        points = (
-                            cam.project2d(new_triangle.p1, *dimensions),
-                            cam.project2d(new_triangle.p2, *dimensions),
-                            cam.project2d(new_triangle.p3, *dimensions)
-                        )
+                        to_draw.append([avg_depth, new_triangle])
 
-                        # draw shapes
-                        pygame.draw.polygon(display, new_triangle.col, points)
-                        pygame.draw.lines(display, "#000000", False, points)
+        bubble_sort(to_draw)
+        for tri in reversed(to_draw):
+            # project 3D camera space points to 2D plane
+            points = (
+                cam.project2d(tri[1].p1, *dimensions),
+                cam.project2d(tri[1].p2, *dimensions),
+                cam.project2d(tri[1].p3, *dimensions)
+            )
+
+            # draw shapes
+            pygame.draw.polygon(display, tri[1].col, points)
+            pygame.draw.lines(display, "#000000", False, points)
 
         pygame.display.update()
 
