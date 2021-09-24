@@ -4,6 +4,10 @@ import re
 hex_col = re.compile(r"#[\dA-Za-z]{6}")
 
 
+def rotate_2darray(arr):
+    return list(map(list, zip(*arr[::-1])))
+
+
 class Center(Mesh):
     def __init__(self, pos: Vector3, col: str, width: float):
         # replace invalid colours with white
@@ -134,13 +138,11 @@ class RubiksCube:
 
         piece_width = width / layers
 
-        e = 0 if layers % 2 else piece_width / 2
-        o = layers // 2
-        delta = piece_width * o - e
+        delta = piece_width * (layers // 2) - (0 if layers % 2 else piece_width / 2)
 
+        # values to adjust edge piece placement with different size cubes
         edge_align = 0 if layers % 2 else 0.5
-        # delta_edge = (o - x - edge_align) * piece_width
-        d_edge = piece_width * o - piece_width * edge_align
+        d_edge = piece_width * (layers // 2) - piece_width * edge_align
 
         self.pieces = []
         for z in range(layers):
@@ -424,3 +426,157 @@ class RubiksCube:
         elif pattern.endswith("2"):
             # 180 degree turn
             [self.rotate(pattern[:-1]) for _ in range(2)]
+
+
+    def slice(self, face: str, depth: int) -> None:
+        if face.endswith("'"):
+            # anti-clockwise rotation
+            [self.slice(face[:-1], depth) for _ in range(3)]
+
+        if depth >= self.layers:
+            # if depth to large rotate the first piece
+            depth = 0
+
+        if depth == 0:
+            # rotating front face
+            self.rotate(face)
+
+        elif depth == self.layers - 1:
+            # rotating reverse face
+            opposite = {"F": "B'", "B": "F'", "R": "L'", "L": "R'", "U": "D'", "D": "U'"}
+            self.rotate(opposite[face])
+
+        elif face == "F":
+            for i in range(self.layers):
+                for j in range(self.layers):
+                    if self.pieces[depth][i][j] is not None:
+                        # rotate pieces in scene
+                        self.pieces[depth][i][j].rotate(rot_z(90))
+
+            # update corner positions
+            tmp = self.pieces[depth][0][0]
+            self.pieces[depth][0][0] = self.pieces[depth][0][self.layers - 1]
+            self.pieces[depth][0][self.layers - 1] = self.pieces[depth][self.layers - 1][self.layers - 1]
+            self.pieces[depth][self.layers - 1][self.layers - 1] = self.pieces[depth][self.layers - 1][0]
+            self.pieces[depth][self.layers - 1][0] = tmp
+
+            # update edge positions
+            for i in range(1, self.layers - 1):
+                tmp = self.pieces[depth][0][i]
+                self.pieces[depth][0][i] = self.pieces[depth][i][self.layers - 1]
+                self.pieces[depth][i][self.layers - 1] = self.pieces[depth][self.layers - 1][self.layers - i - 1]
+                self.pieces[depth][self.layers - 1][self.layers - i - 1] = self.pieces[depth][self.layers - i - 1][0]
+                self.pieces[depth][self.layers - i - 1][0] = tmp
+
+        elif face == "B":
+            depth = self.layers - 1 - depth
+            for i in range(self.layers):
+                for j in range(self.layers):
+                    if self.pieces[depth][i][j] is not None:
+                        # rotate pieces in scene
+                        self.pieces[depth][i][j].rotate(rot_z(-90))
+
+            # update corner positions
+            tmp = self.pieces[depth][0][0]
+            self.pieces[depth][0][0] = self.pieces[depth][0][self.layers - 1]
+            self.pieces[depth][0][self.layers - 1] = self.pieces[depth][self.layers - 1][self.layers - 1]
+            self.pieces[depth][self.layers - 1][self.layers - 1] = self.pieces[depth][self.layers - 1][0]
+            self.pieces[depth][self.layers - 1][0] = tmp
+
+            # update edge positions
+            for i in range(1, self.layers - 1):
+                tmp = self.pieces[depth][0][i]
+                self.pieces[depth][0][i] = self.pieces[depth][i][self.layers - 1]
+                self.pieces[depth][i][self.layers - 1] = self.pieces[depth][self.layers - 1][self.layers - i - 1]
+                self.pieces[depth][self.layers - 1][self.layers - i - 1] = self.pieces[depth][self.layers - i - 1][0]
+                self.pieces[depth][self.layers - i - 1][0] = tmp
+
+        elif face == "R":
+            depth = self.layers - 1 - depth
+            for i in range(self.layers):
+                for j in range(self.layers):
+                    if self.pieces[i][j][depth] is not None:
+                        # rotate pieces in scene
+                        self.pieces[i][j][depth].rotate(rot_x(-90))
+
+            # update corner positions
+            tmp = self.pieces[0][0][depth]
+            self.pieces[0][0][depth] = self.pieces[self.layers - 1][0][depth]
+            self.pieces[self.layers - 1][0][depth] = self.pieces[self.layers - 1][self.layers - 1][depth]
+            self.pieces[self.layers - 1][self.layers - 1][depth] = self.pieces[0][self.layers - 1][depth]
+            self.pieces[0][self.layers - 1][depth] = tmp
+
+            # update edge positions
+            for i in range(1, self.layers - 1):
+                tmp = self.pieces[i][0][depth]
+                self.pieces[i][0][depth] = self.pieces[self.layers - 1][i][depth]
+                self.pieces[self.layers - 1][i][depth] = self.pieces[self.layers - i - 1][self.layers - 1][depth]
+                self.pieces[self.layers - i - 1][self.layers - 1][depth] = self.pieces[0][self.layers - i - 1][depth]
+                self.pieces[0][self.layers - i - 1][depth] = tmp
+
+        elif face == "L":
+            for i in range(self.layers):
+                for j in range(self.layers):
+                    if self.pieces[i][j][depth] is not None:
+                        # rotate pieces in scene
+                        self.pieces[i][j][depth].rotate(rot_x(90))
+
+            # update corner positions
+            tmp = self.pieces[self.layers - 1][0][depth]
+            self.pieces[self.layers - 1][0][depth] = self.pieces[0][0][depth]
+            self.pieces[0][0][depth] = self.pieces[0][self.layers - 1][depth]
+            self.pieces[0][self.layers - 1][depth] = self.pieces[self.layers - 1][self.layers - 1][depth]
+            self.pieces[self.layers - 1][self.layers - 1][depth] = tmp
+
+            # update edge positions
+            for i in range(1, self.layers - 1):
+                tmp = self.pieces[self.layers - i - 1][0][depth]
+                self.pieces[self.layers - i - 1][0][depth] = self.pieces[0][i][depth]
+                self.pieces[0][i][depth] = self.pieces[i][self.layers - 1][depth]
+                self.pieces[i][self.layers - 1][depth] = self.pieces[self.layers - 1][self.layers - i - 1][depth]
+                self.pieces[self.layers - 1][self.layers - i - 1][depth] = tmp
+
+        elif face == "U":
+            depth = self.layers - depth - 1
+            for i in range(self.layers):
+                for j in range(self.layers):
+                    if self.pieces[i][depth][j] is not None:
+                        # rotate pieces in scene
+                        self.pieces[i][depth][j].rotate(rot_y(-90))
+
+            # update corner positions
+            tmp = self.pieces[0][depth][0]
+            self.pieces[0][depth][0] = self.pieces[0][depth][self.layers - 1]
+            self.pieces[0][depth][self.layers - 1] = self.pieces[self.layers - 1][depth][self.layers - 1]
+            self.pieces[self.layers - 1][depth][self.layers - 1] = self.pieces[self.layers - 1][depth][0]
+            self.pieces[self.layers - 1][depth][0] = tmp
+
+            # update edge positions
+            for i in range(1, self.layers - 1):
+                tmp = self.pieces[0][depth][i]
+                self.pieces[0][depth][i] = self.pieces[i][depth][self.layers - 1]
+                self.pieces[i][depth][self.layers - 1] = self.pieces[self.layers - 1][depth][self.layers - i - 1]
+                self.pieces[self.layers - 1][depth][self.layers - i - 1] = self.pieces[self.layers - i - 1][depth][0]
+                self.pieces[self.layers - i - 1][depth][0] = tmp
+
+        elif face == "D":
+            for i in range(self.layers):
+                for j in range(self.layers):
+                    if self.pieces[i][depth][j] is not None:
+                        # rotate pieces in scene
+                        self.pieces[i][depth][j].rotate(rot_y(90))
+
+            # update corner positions
+            tmp = self.pieces[self.layers - 1][depth][0]
+            self.pieces[self.layers - 1][depth][0] = self.pieces[self.layers - 1][depth][self.layers - 1]
+            self.pieces[self.layers - 1][depth][self.layers - 1] = self.pieces[0][depth][self.layers - 1]
+            self.pieces[0][depth][self.layers - 1] = self.pieces[0][depth][0]
+            self.pieces[0][depth][0] = tmp
+
+            # update edge positions
+            for i in range(1, self.layers - 1):
+                tmp = self.pieces[self.layers - 1][depth][i]
+                self.pieces[self.layers - 1][depth][i] = self.pieces[self.layers - i - 1][depth][self.layers - 1]
+                self.pieces[self.layers - i - 1][depth][self.layers - 1] = self.pieces[0][depth][self.layers - i - 1]
+                self.pieces[0][depth][self.layers - i - 1] = self.pieces[i][depth][0]
+                self.pieces[i][depth][0] = tmp
