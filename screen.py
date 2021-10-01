@@ -29,6 +29,7 @@ if __name__ == "__main__":
     cam = Camera(Vector3(0, 0, -30), Vector3(0, 0, 0), 0.1)
 
     cube = RubiksCube(12, 5)
+    cube.scramble()
 
     global_rotation = Matrix3x3([[1, 0, 0], [0, 1, 0], [0, 0, 1]])
 

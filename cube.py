@@ -1,5 +1,5 @@
 from math3d import Mesh, Triangle, Vector3, rot_x, rot_y, rot_z
-import re
+import random, re, time
 
 hex_col = re.compile(r"#[\dA-Za-z]{6}")
 
@@ -446,3 +446,15 @@ class RubiksCube:
         elif face.endswith("2"):
             # 180 degree turn
             [self.rotate(face[:-1], depth) for _ in range(2)]
+
+    def scramble(self):
+        random.seed(time.time())
+        for i in range(100):
+            face = random.choice(["F", "B", "R", "L", "U", "D"])
+            if (rots := random.randint(1, 3)) == 2:
+                face += "2"
+
+            elif rots == 3:
+                face += "'"
+
+            self.rotate(face, random.randint(0, self.layers - 1))
