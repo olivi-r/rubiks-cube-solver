@@ -114,10 +114,16 @@ class Triangle:
         self.p3 = p3
         self.col = col
 
+
+class Polygon:
+    def __init__(self, *triangles: Triangle):
+        self.triangles = list(triangles)
+
     @property
     def normal(self):
-        u = self.p2 - self.p1
-        v = self.p3 - self.p1
+        # assuming all triangles in the polygon are co-planar
+        u = self.triangles[0].p2 - self.triangles[0].p1
+        v = self.triangles[0].p3 - self.triangles[0].p1
         new = Vector3()
         new.i = u.j * v.k - u.k * v.j
         new.j = u.k * v.i - u.i * v.k
@@ -126,25 +132,28 @@ class Triangle:
 
 
 class Mesh:
-    triangles = []
+    polys = []
 
     def scale(self, size: float) -> None:
-        for tri in self.triangles:
-            tri.p1 *= size
-            tri.p2 *= size
-            tri.p3 *= size
+        for poly in self.polys:
+            for tri in poly.triangles:
+                tri.p1 *= size
+                tri.p2 *= size
+                tri.p3 *= size
 
     def translate(self, delta: Vector3) -> None:
-        for tri in self.triangles:
-            tri.p1 += delta
-            tri.p2 += delta
-            tri.p3 += delta
+        for poly in self.polys:
+            for tri in poly.triangles:
+                tri.p1 += delta
+                tri.p2 += delta
+                tri.p3 += delta
 
     def rotate(self, angle: Matrix3x3) -> None:
-        for tri in self.triangles:
-            tri.p1 = angle * tri.p1
-            tri.p2 = angle * tri.p2
-            tri.p3 = angle * tri.p3
+        for poly in self.polys:
+            for tri in poly.triangles:
+                tri.p1 = angle * tri.p1
+                tri.p2 = angle * tri.p2
+                tri.p3 = angle * tri.p3
 
 
 class Camera:

@@ -1,4 +1,4 @@
-from math3d import Camera, Matrix3x3, Triangle, Vector3, rot_x, rot_y
+from math3d import Camera, Matrix3x3, Polygon, Triangle, Vector3, rot_x, rot_y
 from cube import RubiksCube
 import os; os.environ["PYGAME_HIDE_SUPPORT_PROMPT"] = "1"
 import pygame
@@ -19,6 +19,11 @@ def bubble_sort(to_sort: list) -> None:
 
             except IndexError:
                 break
+
+
+def sign(p1: list, p2: list, p3: list) -> float:
+    # https://stackoverflow.com/a/2049593
+    return (p1[0] - p3[0]) * (p2[1] - p3[1]) - (p2[0] - p3[0]) * (p1[1] - p3[1])
 
 
 dimensions = [800, 450]
@@ -42,6 +47,7 @@ if __name__ == "__main__":
     global_rotation = Matrix3x3([[1, 0, 0], [0, 1, 0], [0, 0, 1]])
 
     dragging = False
+    piece_selected = False
 
     running = True
     while running:
@@ -60,7 +66,7 @@ if __name__ == "__main__":
 
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if event.button == 1:
-                    if not dragging:
+                    if not dragging and not piece_selected:
                         dragging = True
                         pygame.mouse.get_rel()
 
@@ -85,39 +91,78 @@ if __name__ == "__main__":
 
                     tmp_piece = piece.copy()
                     tmp_piece.rotate(global_rotation)
-                    for triangle in tmp_piece.triangles:
-                        if (triangle.p1 - cam.pos).dot(triangle.normal) > 0:
+                    for poly in tmp_piece.polys:
+                        if (poly.triangles[0].p1 - cam.pos).dot(poly.normal) > 0:
                             # remove faces pointing away from camera
                             continue
 
-                        # convert world space triangle to camera space
-                        new_triangle = Triangle(
-                            cam.world_to_camera(triangle.p1),
-                            cam.world_to_camera(triangle.p2),
-                            cam.world_to_camera(triangle.p3),
-                            triangle.col
-                        )
+                        new_poly = Polygon()
+                        depths = []
+                        for triangle in poly.triangles:
+                            # convert world space triangle to camera space
+                            new_triangle = Triangle(
+                                cam.world_to_camera(triangle.p1),
+                                cam.world_to_camera(triangle.p2),
+                                cam.world_to_camera(triangle.p3),
+                                triangle.col
+                            )
+                            new_poly.triangles.append(new_triangle)
 
-                        # get the average distance of the camera space triangle from the camera
-                        avg_depth = new_triangle.p1.magnitude
-                        avg_depth += new_triangle.p2.magnitude
-                        avg_depth += new_triangle.p3.magnitude
-                        avg_depth /= 3
+                            # get the average distance of the camera space triangle from the camera
+                            avg_depth = new_triangle.p1.magnitude
+                            avg_depth += new_triangle.p2.magnitude
+                            avg_depth += new_triangle.p3.magnitude
+                            avg_depth /= 3
+                            depths.append(avg_depth)
 
-                        to_draw.append([avg_depth, new_triangle])
+                        overall_avg_depth = sum(depths) / len(depths)
+                        to_draw.append([overall_avg_depth, new_poly])
 
+        piece_selected = False
         bubble_sort(to_draw)
-        for tri in reversed(to_draw):
+        for poly in reversed(to_draw):
             # project 3D camera space points to 2D plane
-            points = (
-                cam.project2d(tri[1].p1, *dimensions),
-                cam.project2d(tri[1].p2, *dimensions),
-                cam.project2d(tri[1].p3, *dimensions)
-            )
 
-            # draw shapes
-            pygame.draw.polygon(display, tri[1].col, points)
-            pygame.draw.lines(display, "#000000", False, points)
+            selected = False
+            if not dragging:
+                for tri in poly[1].triangles:
+                    # https://stackoverflow.com/a/2049593
+                    # construct a ray to detect intersections with polygons from mouse position
+                    if selected:
+                        continue
+
+                    points = (
+                        cam.project2d(tri.p1, *dimensions),
+                        cam.project2d(tri.p2, *dimensions),
+                        cam.project2d(tri.p3, *dimensions)
+                    )
+
+                    coords = pygame.mouse.get_pos()
+                    deltas = [
+                        sign(coords, points[0], points[1]),
+                        sign(coords, points[1], points[2]),
+                        sign(coords, points[2], points[0])
+                    ]
+                    neg = any(map(lambda x: x < 0, deltas))
+                    pos = any(map(lambda x: x > 0, deltas))
+                    if not selected:
+                        selected = not (neg and pos)
+
+                    if not piece_selected and selected:
+                        piece_selected = True
+
+            for tri in poly[1].triangles:
+                # project 3D camera space points to 2D plane
+                points = (
+                    cam.project2d(tri.p1, *dimensions),
+                    cam.project2d(tri.p2, *dimensions),
+                    cam.project2d(tri.p3, *dimensions)
+                )
+                # draw shapes
+                if not selected:
+                    pygame.draw.polygon(display, tri.col, points)
+
+                pygame.draw.lines(display, "#000000", False, points)
 
         pygame.display.update()
 

@@ -1,4 +1,4 @@
-from math3d import Matrix3x3, Mesh, Triangle, Vector3, rot_x, rot_y, rot_z
+from math3d import Matrix3x3, Mesh, Polygon, Triangle, Vector3, rot_x, rot_y, rot_z
 import random, re, time
 
 hex_col = re.compile(r"#[\dA-Za-z]{6}")
@@ -28,11 +28,11 @@ class Center(Mesh):
             col = "#ffffff"
 
         self.col = col
-        self.triangles = [
+        self.polys = [Polygon(
             # top
             Triangle(Vector3(1, 1, -1), Vector3(-1, 1, -1), Vector3(-1, 1, 1), col),
             Triangle(Vector3(-1, 1, 1), Vector3(1, 1, 1), Vector3(1, 1, -1), col)
-        ]
+        )]
 
         self.scale(width / 2)
         self.translate(pos)
@@ -42,9 +42,13 @@ class Center(Mesh):
 
     def copy(self) -> object:
         new = self.__class__(self.pos, self.col, self.width)
-        new.triangles = []
-        for tri in self.triangles:
-            new.triangles.append(Triangle(tri.p1.copy(), tri.p2.copy(), tri.p3.copy(), tri.col))
+        new.polys = []
+        for poly in self.polys:
+            new_poly = Polygon()
+            for tri in poly.triangles:
+                new_poly.triangles.append(Triangle(tri.p1.copy(), tri.p2.copy(), tri.p3.copy(), tri.col))
+
+            new.polys.append(new_poly)
 
         return new
 
@@ -61,13 +65,17 @@ class Edge(Mesh):
 
         self.col1 = col1
         self.col2 = col2
-        self.triangles = [
+        self.polys = [
             # top
-            Triangle(Vector3(1, 1, -1), Vector3(-1, 1, -1), Vector3(-1, 1, 1), col1),
-            Triangle(Vector3(-1, 1, 1), Vector3(1, 1, 1), Vector3(1, 1, -1), col1),
+            Polygon(
+                Triangle(Vector3(1, 1, -1), Vector3(-1, 1, -1), Vector3(-1, 1, 1), col1),
+                Triangle(Vector3(-1, 1, 1), Vector3(1, 1, 1), Vector3(1, 1, -1), col1),
+            ),
             # front
-            Triangle(Vector3(1, -1, -1), Vector3(-1, -1, -1), Vector3(-1, 1, -1), col2),
-            Triangle(Vector3(-1, 1, -1), Vector3(1, 1, -1), Vector3(1, -1, -1), col2)
+            Polygon(
+                Triangle(Vector3(1, -1, -1), Vector3(-1, -1, -1), Vector3(-1, 1, -1), col2),
+                Triangle(Vector3(-1, 1, -1), Vector3(1, 1, -1), Vector3(1, -1, -1), col2)
+            )
         ]
 
         self.scale(width / 2)
@@ -78,9 +86,13 @@ class Edge(Mesh):
 
     def copy(self) -> object:
         new = self.__class__(self.pos, self.col1, self.col2, self.width)
-        new.triangles = []
-        for tri in self.triangles:
-            new.triangles.append(Triangle(tri.p1.copy(), tri.p2.copy(), tri.p3.copy(), tri.col))
+        new.polys = []
+        for poly in self.polys:
+            new_poly = Polygon()
+            for tri in poly.triangles:
+                new_poly.triangles.append(Triangle(tri.p1.copy(), tri.p2.copy(), tri.p3.copy(), tri.col))
+
+            new.polys.append(new_poly)
 
         return new
 
@@ -99,16 +111,22 @@ class Corner(Mesh):
         self.col1 = col1
         self.col2 = col2
         self.col3 = col3
-        self.triangles = [
+        self.polys = [
             # top
-            Triangle(Vector3(1, 1, -1), Vector3(-1, 1, -1), Vector3(-1, 1, 1), col1),
-            Triangle(Vector3(-1, 1, 1), Vector3(1, 1, 1), Vector3(1, 1, -1), col1),
+            Polygon(
+                Triangle(Vector3(1, 1, -1), Vector3(-1, 1, -1), Vector3(-1, 1, 1), col1),
+                Triangle(Vector3(-1, 1, 1), Vector3(1, 1, 1), Vector3(1, 1, -1), col1),
+            ),
             # front
-            Triangle(Vector3(1, -1, -1), Vector3(-1, -1, -1), Vector3(-1, 1, -1), col2),
-            Triangle(Vector3(-1, 1, -1), Vector3(1, 1, -1), Vector3(1, -1, -1), col2),
+            Polygon(
+                Triangle(Vector3(1, -1, -1), Vector3(-1, -1, -1), Vector3(-1, 1, -1), col2),
+                Triangle(Vector3(-1, 1, -1), Vector3(1, 1, -1), Vector3(1, -1, -1), col2),
+            ),
             # right
-            Triangle(Vector3(1, -1, 1), Vector3(1, -1, -1), Vector3(1, 1, -1), col3),
-            Triangle(Vector3(1, 1, -1), Vector3(1, 1, 1), Vector3(1, -1, 1), col3)
+            Polygon(
+                Triangle(Vector3(1, -1, 1), Vector3(1, -1, -1), Vector3(1, 1, -1), col3),
+                Triangle(Vector3(1, 1, -1), Vector3(1, 1, 1), Vector3(1, -1, 1), col3)
+            )
         ]
 
         self.scale(width / 2)
@@ -119,9 +137,13 @@ class Corner(Mesh):
 
     def copy(self) -> object:
         new = self.__class__(self.pos, self.col1, self.col2, self.col3, self.width)
-        new.triangles = []
-        for tri in self.triangles:
-            new.triangles.append(Triangle(tri.p1.copy(), tri.p2.copy(), tri.p3.copy(), tri.col))
+        new.polys = []
+        for poly in self.polys:
+            new_poly = Polygon()
+            for tri in poly.triangles:
+                new_poly.triangles.append(Triangle(tri.p1.copy(), tri.p2.copy(), tri.p3.copy(), tri.col))
+
+            new.polys.append(new_poly)
 
         return new
 
