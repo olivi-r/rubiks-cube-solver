@@ -2,6 +2,8 @@ from math3d import Camera, Matrix3x3, Triangle, Vector3, rot_x, rot_y
 from cube import RubiksCube
 import os; os.environ["PYGAME_HIDE_SUPPORT_PROMPT"] = "1"
 import pygame
+import tkinter
+from tkinter.filedialog import asksaveasfilename
 
 
 def bubble_sort(to_sort: list) -> None:
@@ -24,6 +26,12 @@ dimensions = [800, 450]
 
 if __name__ == "__main__":
     pygame.display.set_caption("Rubik's Cube Solver")
+
+    # create window for tkinter's save dialog to use and hide it
+    headless_container = tkinter.Tk()
+    headless_container.withdraw()
+    headless_container.update()
+
     display = pygame.display.set_mode(dimensions)
 
     cam = Camera(Vector3(0, 0, -30), Vector3(0, 0, 0), 0.1)
@@ -41,6 +49,14 @@ if __name__ == "__main__":
             if event.type == pygame.QUIT:
                 # handle close button event
                 running = False
+
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_s:
+                    name = asksaveasfilename(initialfile="rubiks cube.save", defaultextension=".save", filetypes=[
+                        ("All files", "*.*"), ("Save state", "*.save")
+                    ])
+                    with open(name, "w+") as fp:
+                        fp.write(cube.save_state(global_rotation))
 
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if event.button == 1:

@@ -1,4 +1,4 @@
-from math3d import Mesh, Triangle, Vector3, rot_x, rot_y, rot_z
+from math3d import Matrix3x3, Mesh, Triangle, Vector3, rot_x, rot_y, rot_z
 import random, re, time
 
 hex_col = re.compile(r"#[\dA-Za-z]{6}")
@@ -6,6 +6,16 @@ hex_col = re.compile(r"#[\dA-Za-z]{6}")
 
 def rotate_2darray(arr):
     return list(map(list, zip(*arr[::-1])))
+
+
+class Move:
+    def __init__(self, face: str, turns: int=1, depth: int=0):
+        self.face = face
+        self.turns = turns % 4 if turns % 4 else 1  # minimun turn is 1
+        self.depth = depth
+
+    def __repr__(self):
+        return self.face + str(self.turns) + (str(self.depth) if self.depth else "")
 
 
 class Center(Mesh):
@@ -128,6 +138,8 @@ class RubiksCube:
         layers = int(layers)
         self.layers = layers
 
+        self.moves = {"scramble": [], "solve": []}
+
         try:
             assert layers > 1
             assert isinstance(width, (int, float))
@@ -136,6 +148,7 @@ class RubiksCube:
             layers = 2
             width = 12
 
+        self.width = width
         piece_width = width / layers
 
         delta = piece_width * (layers // 2) - (0 if layers % 2 else piece_width / 2)
@@ -304,7 +317,9 @@ class RubiksCube:
 
             self.pieces.append(z_layer)
 
-    def rotate(self, face: str, depth: int=0) -> None:
+    def rotate(self, move: Move) -> None:
+        face = move.face + ("2" if move.turns == 2 else ("'" if move.turns == 3 else ""))
+        depth = move.depth
         if depth >= self.layers:
             # if depth to large rotate the first piece
             depth = 0
@@ -441,20 +456,23 @@ class RubiksCube:
 
         elif face.endswith("'"):
             # reverse patterns, anti-clockwise instead of clockwise
-            [self.rotate(face[:-1], depth) for _ in range(3)]
+            [self.rotate(Move(face[:-1], 1, depth)) for _ in range(3)]
 
         elif face.endswith("2"):
             # 180 degree turn
-            [self.rotate(face[:-1], depth) for _ in range(2)]
+            [self.rotate(Move(face[:-1], 1, depth)) for _ in range(2)]
 
-    def scramble(self):
+    def scramble(self) -> None:
         random.seed(time.time())
-        for i in range(100):
+        for i in range(10 * self.layers):
             face = random.choice(["F", "B", "R", "L", "U", "D"])
-            if (rots := random.randint(1, 3)) == 2:
-                face += "2"
+            turns = random.randint(1, 3)
+            depth = random.randint(0, self.layers - 1)
+            move = Move(face, turns, depth)
+            self.moves["scramble"].append(move)
+            self.rotate(move)
 
-            elif rots == 3:
-                face += "'"
-
-            self.rotate(face, random.randint(0, self.layers - 1))
+    def save_state(self, global_rotation: Matrix3x3) -> str:
+        state = str(self.width) + ":" + str(self.layers) + ":"
+        state += ",".join(str(x) for y in global_rotation.data for x in y) + ":"
+        return state + ",".join(map(str, self.moves["scramble"])) + ":" + ",".join(map(str, self.moves["solve"]))
