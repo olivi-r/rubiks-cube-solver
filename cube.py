@@ -157,6 +157,16 @@ class RubiksCube:
         blue = "#0000ff"
         green = "#00ff00"
 
+        # dimmed colours for when face is selected
+        self.dimmed = {
+            white: "#cccccc",
+            yellow: "#999900",
+            red: "#990000",
+            orange: "#994300",
+            blue: "#000099",
+            green: "#009900"
+        }
+
         layers = int(layers)
         self.layers = layers
 

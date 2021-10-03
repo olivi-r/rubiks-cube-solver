@@ -162,6 +162,9 @@ if __name__ == "__main__":
                 if not selected:
                     pygame.draw.polygon(display, tri.col, points)
 
+                else:
+                    pygame.draw.polygon(display, cube.dimmed[tri.col], points)
+
                 pygame.draw.lines(display, "#000000", False, points)
 
         pygame.display.update()
