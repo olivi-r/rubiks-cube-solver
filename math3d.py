@@ -12,6 +12,12 @@ class Matrix3x3:
                 # all values are actually numbers
                 self.data = rows
 
+    def __sub__(self, other):
+        if isinstance(other, self.__class__):
+            return self.__class__(
+                [list(map(lambda x: x[0] - x[1], zip(self.data[i], other.data[i]))) for i in range(3)]
+            )
+
     def __mul__(self, other):
         if isinstance(other, self.__class__):
             new = other.__class__()
