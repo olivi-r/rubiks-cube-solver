@@ -150,21 +150,21 @@ class Corner(Mesh):
 
 class RubiksCube:
     def __init__(self, width: float, layers: int):
-        white = "#ffffff"
-        yellow = "#ffff00"
-        red = "#ff0000"
-        orange = "#ff6f00"
-        blue = "#0000ff"
-        green = "#00ff00"
+        self.white = "#ffffff"
+        self.yellow = "#ffff00"
+        self.red = "#ff0000"
+        self.orange = "#ff6f00"
+        self.blue = "#0000ff"
+        self.green = "#00ff00"
 
         # dimmed colours for when face is selected
         self.dimmed = {
-            white: "#cccccc",
-            yellow: "#999900",
-            red: "#990000",
-            orange: "#994300",
-            blue: "#000099",
-            green: "#009900"
+            self.white: "#cccccc",
+            self.yellow: "#999900",
+            self.red: "#990000",
+            self.orange: "#994300",
+            self.blue: "#000099",
+            self.green: "#009900"
         }
 
         layers = int(layers)
@@ -199,146 +199,146 @@ class RubiksCube:
                         if y == 0:
                             if x == 0:
                                 # front bottom left corner
-                                y_layer.append(Corner(Vector3(delta, delta, -delta), yellow, red, green, piece_width))
+                                y_layer.append(Corner(Vector3(delta, delta, -delta), self.yellow, self.red, self.green, piece_width))
                                 y_layer[-1].rotate(rot_z(180))
 
                             elif x == layers - 1:
                                 # front bottom right corner
-                                y_layer.append(Corner(Vector3(delta, delta, -delta), blue, red, yellow, piece_width))
+                                y_layer.append(Corner(Vector3(delta, delta, -delta), self.blue, self.red, self.yellow, piece_width))
                                 y_layer[-1].rotate(rot_z(90))
 
                             else:
                                 # front bottom edges
-                                y_layer.append(Edge(Vector3(d_edge - x * piece_width, delta, -delta), yellow, red, piece_width))
+                                y_layer.append(Edge(Vector3(d_edge - x * piece_width, delta, -delta), self.yellow, self.red, piece_width))
                                 y_layer[-1].rotate(rot_z(180))
 
                         elif y == layers - 1:
                             if x == 0:
                                 # front top left corner
-                                y_layer.append(Corner(Vector3(delta, delta, -delta), white, green, red, piece_width))
+                                y_layer.append(Corner(Vector3(delta, delta, -delta), self.white, self.green, self.red, piece_width))
                                 y_layer[-1].rotate(rot_y(-90))
 
                             elif x == layers - 1:
                                 # front top right corner
-                                y_layer.append(Corner(Vector3(delta, delta, -delta), white, red, blue, piece_width))
+                                y_layer.append(Corner(Vector3(delta, delta, -delta), self.white, self.red, self.blue, piece_width))
 
                             else:
                                 # front top edges
-                                y_layer.append(Edge(Vector3(x * piece_width - d_edge, delta, -delta), white, red, piece_width))
+                                y_layer.append(Edge(Vector3(x * piece_width - d_edge, delta, -delta), self.white, self.red, piece_width))
 
                         else:
                             if x == 0:
                                 # front middle left edges
-                                y_layer.append(Edge(Vector3(y * piece_width - d_edge, delta, -delta), green, red, piece_width))
+                                y_layer.append(Edge(Vector3(y * piece_width - d_edge, delta, -delta), self.green, self.red, piece_width))
                                 y_layer[-1].rotate(rot_z(-90))
 
                             elif x == layers - 1:
                                 # front middle right edges
-                                y_layer.append(Edge(Vector3(d_edge - y * piece_width, delta, -delta), blue, red, piece_width))
+                                y_layer.append(Edge(Vector3(d_edge - y * piece_width, delta, -delta), self.blue, self.red, piece_width))
                                 y_layer[-1].rotate(rot_z(90))
 
                             else:
                                 # front center
-                                y_layer.append(Center(Vector3(x * piece_width - d_edge, delta, y * piece_width - d_edge), red, piece_width))
+                                y_layer.append(Center(Vector3(x * piece_width - d_edge, delta, y * piece_width - d_edge), self.red, piece_width))
                                 y_layer[-1].rotate(rot_x(90))
 
                     elif z == layers - 1:
                         if y == 0:
                             if x == 0:
                                 # back bottom left corner
-                                y_layer.append(Corner(Vector3(delta, delta, -delta), yellow, green, orange, piece_width))
+                                y_layer.append(Corner(Vector3(delta, delta, -delta), self.yellow, self.green, self.orange, piece_width))
                                 y_layer[-1].rotate(rot_z(180))
                                 y_layer[-1].rotate(rot_y(-90))
 
                             elif x == layers - 1:
                                 # back bottom right corner
-                                y_layer.append(Corner(Vector3(delta, delta, -delta), yellow, orange, blue, piece_width))
+                                y_layer.append(Corner(Vector3(delta, delta, -delta), self.yellow, self.orange, self.blue, piece_width))
                                 y_layer[-1].rotate(rot_z(180))
                                 y_layer[-1].rotate(rot_y(180))
 
                             else:
                                 # back bottom edges
-                                y_layer.append(Edge(Vector3(x * piece_width - d_edge, delta, -delta), yellow, orange, piece_width))
+                                y_layer.append(Edge(Vector3(x * piece_width - d_edge, delta, -delta), self.yellow, self.orange, piece_width))
                                 y_layer[-1].rotate(rot_z(180))
                                 y_layer[-1].rotate(rot_y(180))
 
                         elif y == layers - 1:
                             if x == 0:
                                 # back top left corner
-                                y_layer.append(Corner(Vector3(delta, delta, -delta), white, orange, green, piece_width))
+                                y_layer.append(Corner(Vector3(delta, delta, -delta), self.white, self.orange, self.green, piece_width))
                                 y_layer[-1].rotate(rot_y(180))
 
                             elif x == layers - 1:
                                 # back top right corner
-                                y_layer.append(Corner(Vector3(delta, delta, -delta), white, blue, orange, piece_width))
+                                y_layer.append(Corner(Vector3(delta, delta, -delta), self.white, self.blue, self.orange, piece_width))
                                 y_layer[-1].rotate(rot_y(90))
 
                             else:
                                 # back top edges
-                                y_layer.append(Edge(Vector3(d_edge - x * piece_width, delta, -delta), white, orange, piece_width))
+                                y_layer.append(Edge(Vector3(d_edge - x * piece_width, delta, -delta), self.white, self.orange, piece_width))
                                 y_layer[-1].rotate(rot_y(180))
 
                         else:
                             if x == 0:
                                 # back left edges
-                                y_layer.append(Edge(Vector3(d_edge - y * piece_width, delta, -delta), green, orange, piece_width))
+                                y_layer.append(Edge(Vector3(d_edge - y * piece_width, delta, -delta), self.green, self.orange, piece_width))
                                 y_layer[-1].rotate(rot_z(90))
                                 y_layer[-1].rotate(rot_y(180))
 
                             elif x == layers - 1:
                                 # back right edges
-                                y_layer.append(Edge(Vector3(y * piece_width - d_edge, delta, -delta), blue, orange, piece_width))
+                                y_layer.append(Edge(Vector3(y * piece_width - d_edge, delta, -delta), self.blue, self.orange, piece_width))
                                 y_layer[-1].rotate(rot_z(-90))
                                 y_layer[-1].rotate(rot_y(180))
 
                             else:
                                 # back center
-                                y_layer.append(Center(Vector3(x * piece_width - d_edge, delta, d_edge - y * piece_width), orange, piece_width))
+                                y_layer.append(Center(Vector3(x * piece_width - d_edge, delta, d_edge - y * piece_width), self.orange, piece_width))
                                 y_layer[-1].rotate(rot_x(-90))
 
                     else:
                         if y == 0:
                             if x == 0:
                                 # middle bottom left edges
-                                y_layer.append(Edge(Vector3(z * piece_width - d_edge, delta, -delta), yellow, green, piece_width))
+                                y_layer.append(Edge(Vector3(z * piece_width - d_edge, delta, -delta), self.yellow, self.green, piece_width))
                                 y_layer[-1].rotate(rot_z(180))
                                 y_layer[-1].rotate(rot_y(-90))
 
                             elif x == layers - 1:
                                 # middle bottom right edges
-                                y_layer.append(Edge(Vector3(d_edge - z * piece_width, delta, -delta), yellow, blue, piece_width))
+                                y_layer.append(Edge(Vector3(d_edge - z * piece_width, delta, -delta), self.yellow, self.blue, piece_width))
                                 y_layer[-1].rotate(rot_z(180))
                                 y_layer[-1].rotate(rot_y(90))
 
                             else:
                                 # bottom center
-                                y_layer.append(Center(Vector3(d_edge - x * piece_width, delta, z * piece_width - d_edge), yellow, piece_width))
+                                y_layer.append(Center(Vector3(d_edge - x * piece_width, delta, z * piece_width - d_edge), self.yellow, piece_width))
                                 y_layer[-1].rotate(rot_z(180))
 
                         elif y == layers - 1:
                             if x == 0:
                                 # middle top left edges
-                                y_layer.append(Edge(Vector3(d_edge - z * piece_width, delta, -delta), white, green, piece_width))
+                                y_layer.append(Edge(Vector3(d_edge - z * piece_width, delta, -delta), self.white, self.green, piece_width))
                                 y_layer[-1].rotate(rot_y(-90))
 
                             elif x == layers - 1:
                                 # middle top right edges
-                                y_layer.append(Edge(Vector3(z * piece_width - d_edge, delta, -delta), white, blue, piece_width))
+                                y_layer.append(Edge(Vector3(z * piece_width - d_edge, delta, -delta), self.white, self.blue, piece_width))
                                 y_layer[-1].rotate(rot_y(90))
 
                             else:
                                 # top center
-                                y_layer.append(Center(Vector3(x * piece_width - d_edge, delta, z * piece_width - d_edge), white, piece_width))
+                                y_layer.append(Center(Vector3(x * piece_width - d_edge, delta, z * piece_width - d_edge), self.white, piece_width))
 
                         else:
                             if x == 0:
                                 # left center
-                                y_layer.append(Center(Vector3(y * piece_width - d_edge, delta, z * piece_width - d_edge), green, piece_width))
+                                y_layer.append(Center(Vector3(y * piece_width - d_edge, delta, z * piece_width - d_edge), self.green, piece_width))
                                 y_layer[-1].rotate(rot_z(-90))
 
                             elif x == layers - 1:
                                 # right center
-                                y_layer.append(Center(Vector3(d_edge - y * piece_width, delta, z * piece_width - d_edge), blue, piece_width))
+                                y_layer.append(Center(Vector3(d_edge - y * piece_width, delta, z * piece_width - d_edge), self.blue, piece_width))
                                 y_layer[-1].rotate(rot_z(90))
 
                             else:
@@ -508,3 +508,115 @@ class RubiksCube:
         state = str(self.width) + ":" + str(self.layers) + ":"
         state += ",".join(str(x) for y in global_rotation.data for x in y) + ":"
         return state + ",".join(map(str, self.moves["scramble"])) + ":" + ",".join(map(str, self.moves["solve"]))
+
+    def solve(self):
+        if self.layers == 2:
+            # 2x2 cube
+
+            def drop_y(x, z):
+                # move piece downwards whilst maintaining x and z positions and without moving other top pieces
+                if x == 0:
+                    if z == 0:
+                        self.rotate(Move("L"))
+                        self.rotate(Move("D", 3))
+                        self.rotate(Move("L", 3))
+
+                    else:
+                        self.rotate(Move("L", 3))
+                        self.rotate(Move("D"))
+                        self.rotate(Move("L"))
+
+                else:
+                    if z == 0:
+                        self.rotate(Move("R", 3))
+                        self.rotate(Move("D"))
+                        self.rotate(Move("R"))
+
+                    else:
+                        self.rotate(Move("R"))
+                        self.rotate(Move("D", 3))
+                        self.rotate(Move("R", 3))
+
+            for z, z_row in enumerate(self.pieces):
+                for y, y_row in enumerate(z_row):
+                    for x, piece in enumerate(y_row):
+                        if piece.col1 == self.white and piece.col2 == self.green and piece.col3 == self.red:
+                            if y == 1:
+                                drop_y(x, z)
+
+                            if x == 1:
+                                if z == 0:
+                                    self.rotate(Move("D", 3))
+
+                                else:
+                                    self.rotate(Move("D", 2))
+
+                            elif z == 1:
+                                self.rotate(Move("D"))
+
+                            self.rotate(Move("L"))
+                            self.rotate(Move("D"))
+                            self.rotate(Move("L", 3))
+
+            for z, z_row in enumerate(self.pieces):
+                for y, y_row in enumerate(z_row):
+                    for x, piece in enumerate(y_row):
+                        if piece.col1 == self.white and piece.col2 == self.red and piece.col3 == self.blue:
+                            if y == 1:
+                                drop_y(x, z)
+
+                            if x == 0:
+                                if z == 0:
+                                    self.rotate(Move("D"))
+
+                                else:
+                                    self.rotate(Move("D", 2))
+
+                            elif z == 1:
+                                self.rotate(Move("D", 3))
+
+                            self.rotate(Move("R", 3))
+                            self.rotate(Move("D", 3))
+                            self.rotate(Move("R"))
+
+            for z, z_row in enumerate(self.pieces):
+                for y, y_row in enumerate(z_row):
+                    for x, piece in enumerate(y_row):
+                        if piece.col1 == self.white and piece.col2 == self.orange and piece.col3 == self.green:
+                            if y == 1:
+                                drop_y(x, z)
+
+                            if x == 1:
+                                if z == 0:
+                                    self.rotate(Move("D", 2))
+
+                                else:
+                                    self.rotate(Move("D"))
+
+                            elif z == 0:
+                                self.rotate(Move("D", 3))
+
+                            self.rotate(Move("L", 3))
+                            self.rotate(Move("D", 3))
+                            self.rotate(Move("L"))
+
+            for z, z_row in enumerate(self.pieces):
+                for y, y_row in enumerate(z_row):
+                    for x, piece in enumerate(y_row):
+                        if piece.col1 == self.white and piece.col2 == self.blue and piece.col3 == self.orange:
+                            if y == 1:
+                                drop_y(x, z)
+
+                            if x == 0:
+                                if z == 0:
+                                    self.rotate(Move("D", 2))
+
+                                else:
+                                    self.rotate(Move("D", 3))
+
+                            elif z == 0:
+                                self.rotate(Move("D"))
+
+                            self.rotate(Move("R"))
+                            self.rotate(Move("D"))
+                            self.rotate(Move("R", 3))
