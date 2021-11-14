@@ -98,7 +98,7 @@ class Edge(Mesh):
 
 
 class Corner(Mesh):
-    def __init__(self, pos: Vector3, col1: str, col2: str, col3: str, width: float):
+    def __init__(self, pos: Vector3, col1: str, col2: str, col3: str, width: float, orient: int):
         # replace invalid colours with white
         try:
             assert hex_col.match(col1) is not None
@@ -134,9 +134,10 @@ class Corner(Mesh):
 
         self.width = width
         self.pos = pos
+        self.orient = orient
 
     def copy(self) -> object:
-        new = self.__class__(self.pos, self.col1, self.col2, self.col3, self.width)
+        new = self.__class__(self.pos, self.col1, self.col2, self.col3, self.width, self.orient)
         new.polys = []
         for poly in self.polys:
             new_poly = Polygon()
@@ -199,12 +200,12 @@ class RubiksCube:
                         if y == 0:
                             if x == 0:
                                 # front bottom left corner
-                                y_layer.append(Corner(Vector3(delta, delta, -delta), self.yellow, self.red, self.green, piece_width))
+                                y_layer.append(Corner(Vector3(delta, delta, -delta), self.yellow, self.red, self.green, piece_width, 0))
                                 y_layer[-1].rotate(rot_z(180))
 
                             elif x == layers - 1:
                                 # front bottom right corner
-                                y_layer.append(Corner(Vector3(delta, delta, -delta), self.yellow, self.blue, self.red, piece_width))
+                                y_layer.append(Corner(Vector3(delta, delta, -delta), self.yellow, self.blue, self.red, piece_width, 0))
                                 y_layer[-1].rotate(rot_y(-90))
                                 y_layer[-1].rotate(rot_z(180))
 
@@ -216,12 +217,12 @@ class RubiksCube:
                         elif y == layers - 1:
                             if x == 0:
                                 # front top left corner
-                                y_layer.append(Corner(Vector3(delta, delta, -delta), self.white, self.green, self.red, piece_width))
+                                y_layer.append(Corner(Vector3(delta, delta, -delta), self.white, self.green, self.red, piece_width, 0))
                                 y_layer[-1].rotate(rot_y(-90))
 
                             elif x == layers - 1:
                                 # front top right corner
-                                y_layer.append(Corner(Vector3(delta, delta, -delta), self.white, self.red, self.blue, piece_width))
+                                y_layer.append(Corner(Vector3(delta, delta, -delta), self.white, self.red, self.blue, piece_width, 0))
 
                             else:
                                 # front top edges
@@ -247,13 +248,13 @@ class RubiksCube:
                         if y == 0:
                             if x == 0:
                                 # back bottom left corner
-                                y_layer.append(Corner(Vector3(delta, delta, -delta), self.yellow, self.green, self.orange, piece_width))
+                                y_layer.append(Corner(Vector3(delta, delta, -delta), self.yellow, self.green, self.orange, piece_width, 0))
                                 y_layer[-1].rotate(rot_z(180))
                                 y_layer[-1].rotate(rot_y(-90))
 
                             elif x == layers - 1:
                                 # back bottom right corner
-                                y_layer.append(Corner(Vector3(delta, delta, -delta), self.yellow, self.orange, self.blue, piece_width))
+                                y_layer.append(Corner(Vector3(delta, delta, -delta), self.yellow, self.orange, self.blue, piece_width, 0))
                                 y_layer[-1].rotate(rot_z(180))
                                 y_layer[-1].rotate(rot_y(180))
 
@@ -266,12 +267,12 @@ class RubiksCube:
                         elif y == layers - 1:
                             if x == 0:
                                 # back top left corner
-                                y_layer.append(Corner(Vector3(delta, delta, -delta), self.white, self.orange, self.green, piece_width))
+                                y_layer.append(Corner(Vector3(delta, delta, -delta), self.white, self.orange, self.green, piece_width, 0))
                                 y_layer[-1].rotate(rot_y(180))
 
                             elif x == layers - 1:
                                 # back top right corner
-                                y_layer.append(Corner(Vector3(delta, delta, -delta), self.white, self.blue, self.orange, piece_width))
+                                y_layer.append(Corner(Vector3(delta, delta, -delta), self.white, self.blue, self.orange, piece_width, 0))
                                 y_layer[-1].rotate(rot_y(90))
 
                             else:
@@ -368,6 +369,13 @@ class RubiksCube:
             # rotate pieces in scene
             [self.pieces[depth][i][j].rotate(rot_z(90)) for i in range(self.layers) for j in range(self.layers) if self.pieces[depth][i][j] is not None]
 
+            if depth == 0:
+                # update corner orientation
+                self.pieces[0][self.layers - 1][0].orient = (self.pieces[0][self.layers - 1][0].orient + 2) % 3
+                self.pieces[0][self.layers - 1][self.layers - 1].orient = (self.pieces[0][self.layers - 1][self.layers - 1].orient + 1) % 3
+                self.pieces[0][0][self.layers - 1].orient = (self.pieces[0][0][self.layers - 1].orient + 2) % 3
+                self.pieces[0][0][0].orient = (self.pieces[0][0][0].orient + 1) % 3
+
             for j in range(self.layers // 2):
                 # update corner positions
                 tmp = self.pieces[depth][j][j]
@@ -388,6 +396,13 @@ class RubiksCube:
             depth = self.layers - depth - 1
             # rotate pieces in scene
             [self.pieces[depth][i][j].rotate(rot_z(-90)) for i in range(self.layers) for j in range(self.layers) if self.pieces[depth][i][j] is not None]
+
+            if depth == self.layers - 1:
+                # update corner orientation
+                self.pieces[self.layers - 1][self.layers - 1][self.layers - 1].orient = (self.pieces[self.layers - 1][self.layers - 1][self.layers - 1].orient + 2) % 3
+                self.pieces[self.layers - 1][self.layers - 1][0].orient = (self.pieces[self.layers - 1][self.layers - 1][0].orient + 1) % 3
+                self.pieces[self.layers - 1][0][0].orient = (self.pieces[self.layers - 1][0][0].orient + 2) % 3
+                self.pieces[self.layers - 1][0][self.layers - 1].orient = (self.pieces[self.layers - 1][0][self.layers - 1].orient + 1) % 3
 
             for j in range(self.layers // 2):
                 # update corner positions
@@ -410,6 +425,13 @@ class RubiksCube:
             # rotate pieces in scene
             [self.pieces[i][j][depth].rotate(rot_x(-90)) for i in range(self.layers) for j in range(self.layers) if self.pieces[i][j][depth] is not None]
 
+            if depth == self.layers - 1:
+                # update corner orientation
+                self.pieces[0][self.layers - 1][self.layers - 1].orient = (self.pieces[0][self.layers - 1][self.layers - 1].orient + 2) % 3
+                self.pieces[self.layers - 1][self.layers - 1][self.layers - 1].orient = (self.pieces[self.layers - 1][self.layers - 1][self.layers - 1].orient + 1) % 3
+                self.pieces[self.layers - 1][0][self.layers - 1].orient = (self.pieces[self.layers - 1][0][self.layers - 1].orient + 2) % 3
+                self.pieces[0][0][self.layers - 1].orient = (self.pieces[0][0][self.layers - 1].orient + 1) % 3
+
             for j in range(self.layers // 2):
                 # update corner positions
                 tmp = self.pieces[j][j][depth]
@@ -429,6 +451,13 @@ class RubiksCube:
         elif face == "L":
             # rotate pieces in scene
             [self.pieces[i][j][depth].rotate(rot_x(90)) for i in range(self.layers) for j in range(self.layers) if self.pieces[i][j][depth] is not None]
+
+            if depth == 0:
+                # update corner orientation
+                self.pieces[self.layers - 1][self.layers - 1][0].orient = (self.pieces[self.layers - 1][self.layers - 1][0].orient + 2) % 3
+                self.pieces[0][self.layers - 1][0].orient = (self.pieces[0][self.layers - 1][0].orient + 1) % 3
+                self.pieces[0][0][0].orient = (self.pieces[0][0][0].orient + 2) % 3
+                self.pieces[self.layers - 1][0][0].orient = (self.pieces[self.layers - 1][0][0].orient + 1) % 3
 
             for j in range(self.layers // 2):
                 # update corner positions
@@ -451,6 +480,8 @@ class RubiksCube:
             # rotate pieces in scene
             [self.pieces[i][depth][j].rotate(rot_y(-90)) for i in range(self.layers) for j in range(self.layers) if self.pieces[i][depth][j] is not None]
 
+            # corner orientations unchanged
+
             for j in range(self.layers // 2):
                 # update corner positions
                 tmp = self.pieces[j][depth][j]
@@ -470,6 +501,8 @@ class RubiksCube:
         elif face == "D":
             # rotate pieces in scene
             [self.pieces[i][depth][j].rotate(rot_y(90)) for i in range(self.layers) for j in range(self.layers) if self.pieces[i][depth][j] is not None]
+
+            # corner orientation unchanged
 
             for j in range(self.layers // 2):
                 # update corner positions
@@ -625,6 +658,79 @@ class RubiksCube:
                             self.rotate(Move("R"))
                             self.rotate(Move("D"))
                             self.rotate(Move("R", 3))
+
+            # rotate top corners correctly
+            if self.pieces[0][1][0].orient == 1:
+                self.rotate(Move("L"))
+                self.rotate(Move("D"))
+                self.rotate(Move("L", 3))
+                self.rotate(Move("D", 3))
+                self.rotate(Move("L"))
+                self.rotate(Move("D"))
+                self.rotate(Move("L", 3))
+
+            elif self.pieces[0][1][0].orient == 2:
+                self.rotate(Move("L"))
+                self.rotate(Move("D", 3))
+                self.rotate(Move("L", 3))
+                self.rotate(Move("D"))
+                self.rotate(Move("L"))
+                self.rotate(Move("D", 3))
+                self.rotate(Move("L", 3))
+
+            if self.pieces[0][1][1].orient == 1:
+                self.rotate(Move("F"))
+                self.rotate(Move("D"))
+                self.rotate(Move("F", 3))
+                self.rotate(Move("D", 3))
+                self.rotate(Move("F"))
+                self.rotate(Move("D"))
+                self.rotate(Move("F", 3))
+
+            elif self.pieces[0][1][1].orient == 2:
+                self.rotate(Move("F"))
+                self.rotate(Move("D", 3))
+                self.rotate(Move("F", 3))
+                self.rotate(Move("D"))
+                self.rotate(Move("F"))
+                self.rotate(Move("D", 3))
+                self.rotate(Move("F", 3))
+
+            if self.pieces[1][1][0].orient == 1:
+                self.rotate(Move("B"))
+                self.rotate(Move("D"))
+                self.rotate(Move("B", 3))
+                self.rotate(Move("D", 3))
+                self.rotate(Move("B"))
+                self.rotate(Move("D"))
+                self.rotate(Move("B", 3))
+
+            elif self.pieces[1][1][0].orient == 2:
+                self.rotate(Move("B"))
+                self.rotate(Move("D", 3))
+                self.rotate(Move("B", 3))
+                self.rotate(Move("D"))
+                self.rotate(Move("B"))
+                self.rotate(Move("D", 3))
+                self.rotate(Move("B", 3))
+
+            if self.pieces[1][1][1].orient == 1:
+                self.rotate(Move("R"))
+                self.rotate(Move("D"))
+                self.rotate(Move("R", 3))
+                self.rotate(Move("D", 3))
+                self.rotate(Move("R"))
+                self.rotate(Move("D"))
+                self.rotate(Move("R", 3))
+
+            elif self.pieces[1][1][1].orient == 2:
+                self.rotate(Move("R"))
+                self.rotate(Move("D", 3))
+                self.rotate(Move("R", 3))
+                self.rotate(Move("D"))
+                self.rotate(Move("R"))
+                self.rotate(Move("D", 3))
+                self.rotate(Move("R", 3))
 
             # front bottom left
             for z, z_row in enumerate(self.pieces):
