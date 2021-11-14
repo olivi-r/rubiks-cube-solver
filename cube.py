@@ -551,25 +551,17 @@ class RubiksCube:
                 # move piece downwards whilst maintaining x and z positions and without moving other top pieces
                 if x == 0:
                     if z == 0:
-                        self.rotate(Move("L"))
-                        self.rotate(Move("D", 3))
-                        self.rotate(Move("L", 3))
+                        self.evaluate("L D' L'")
 
                     else:
-                        self.rotate(Move("L", 3))
-                        self.rotate(Move("D"))
-                        self.rotate(Move("L"))
+                        self.evaluate("L' D L")
 
                 else:
                     if z == 0:
-                        self.rotate(Move("R", 3))
-                        self.rotate(Move("D"))
-                        self.rotate(Move("R"))
+                        self.evaluate("R' D R")
 
                     else:
-                        self.rotate(Move("R"))
-                        self.rotate(Move("D", 3))
-                        self.rotate(Move("R", 3))
+                        self.evaluate("R D' R'")
 
             # front top left
             for z, z_row in enumerate(self.pieces):
@@ -589,9 +581,7 @@ class RubiksCube:
                             elif z == 1:
                                 self.rotate(Move("D"))
 
-                            self.rotate(Move("L"))
-                            self.rotate(Move("D"))
-                            self.rotate(Move("L", 3))
+                            self.evaluate("L D L'")
 
             # front top right
             for z, z_row in enumerate(self.pieces):
@@ -611,9 +601,7 @@ class RubiksCube:
                             elif z == 1:
                                 self.rotate(Move("D", 3))
 
-                            self.rotate(Move("R", 3))
-                            self.rotate(Move("D", 3))
-                            self.rotate(Move("R"))
+                            self.evaluate("R' D' R")
 
             # back top left
             for z, z_row in enumerate(self.pieces):
@@ -633,9 +621,7 @@ class RubiksCube:
                             elif z == 0:
                                 self.rotate(Move("D", 3))
 
-                            self.rotate(Move("L", 3))
-                            self.rotate(Move("D", 3))
-                            self.rotate(Move("L"))
+                            self.evaluate("L' D' L")
 
             # back top right
             for z, z_row in enumerate(self.pieces):
@@ -655,82 +641,32 @@ class RubiksCube:
                             elif z == 0:
                                 self.rotate(Move("D"))
 
-                            self.rotate(Move("R"))
-                            self.rotate(Move("D"))
-                            self.rotate(Move("R", 3))
+                            self.evaluate("R D R'")
 
             # rotate top corners correctly
             if self.pieces[0][1][0].orient == 1:
-                self.rotate(Move("L"))
-                self.rotate(Move("D"))
-                self.rotate(Move("L", 3))
-                self.rotate(Move("D", 3))
-                self.rotate(Move("L"))
-                self.rotate(Move("D"))
-                self.rotate(Move("L", 3))
+                self.evaluate("L D L' D' L D L'")
 
             elif self.pieces[0][1][0].orient == 2:
-                self.rotate(Move("L"))
-                self.rotate(Move("D", 3))
-                self.rotate(Move("L", 3))
-                self.rotate(Move("D"))
-                self.rotate(Move("L"))
-                self.rotate(Move("D", 3))
-                self.rotate(Move("L", 3))
+                self.evaluate("L D' L' D L D' L'")
 
             if self.pieces[0][1][1].orient == 1:
-                self.rotate(Move("F"))
-                self.rotate(Move("D"))
-                self.rotate(Move("F", 3))
-                self.rotate(Move("D", 3))
-                self.rotate(Move("F"))
-                self.rotate(Move("D"))
-                self.rotate(Move("F", 3))
+                self.evaluate("F D F' D' F D F'")
 
             elif self.pieces[0][1][1].orient == 2:
-                self.rotate(Move("F"))
-                self.rotate(Move("D", 3))
-                self.rotate(Move("F", 3))
-                self.rotate(Move("D"))
-                self.rotate(Move("F"))
-                self.rotate(Move("D", 3))
-                self.rotate(Move("F", 3))
+                self.evaluate("F D' F' D F D' F'")
 
             if self.pieces[1][1][0].orient == 1:
-                self.rotate(Move("B"))
-                self.rotate(Move("D"))
-                self.rotate(Move("B", 3))
-                self.rotate(Move("D", 3))
-                self.rotate(Move("B"))
-                self.rotate(Move("D"))
-                self.rotate(Move("B", 3))
+                self.evaluate("B D B' D' B D B'")
 
             elif self.pieces[1][1][0].orient == 2:
-                self.rotate(Move("B"))
-                self.rotate(Move("D", 3))
-                self.rotate(Move("B", 3))
-                self.rotate(Move("D"))
-                self.rotate(Move("B"))
-                self.rotate(Move("D", 3))
-                self.rotate(Move("B", 3))
+                self.evaluate("B D' B' D B D' B'")
 
             if self.pieces[1][1][1].orient == 1:
-                self.rotate(Move("R"))
-                self.rotate(Move("D"))
-                self.rotate(Move("R", 3))
-                self.rotate(Move("D", 3))
-                self.rotate(Move("R"))
-                self.rotate(Move("D"))
-                self.rotate(Move("R", 3))
+                self.evaluate("R D R' D' R D R'")
 
             elif self.pieces[1][1][1].orient == 2:
-                self.rotate(Move("R"))
-                self.rotate(Move("D", 3))
-                self.rotate(Move("R", 3))
-                self.rotate(Move("D"))
-                self.rotate(Move("R"))
-                self.rotate(Move("D", 3))
-                self.rotate(Move("R", 3))
+                self.evaluate("R D' R' D R D' R'")
 
             # front bottom left
             for z, z_row in enumerate(self.pieces):
@@ -747,41 +683,33 @@ class RubiksCube:
                             elif x == 1:
                                 self.rotate(Move("D", 3))
 
-            def rotate_edges():
-                self.rotate(Move("R", 3))
-                self.rotate(Move("D"))
-                self.rotate(Move("L"))
-                self.rotate(Move("D", 3))
-                self.rotate(Move("R"))
-                self.rotate(Move("D"))
-                self.rotate(Move("L", 3))
-                self.rotate(Move("D", 3))
-
             for z, z_row in enumerate(self.pieces):
                 for y, y_row in enumerate(z_row):
                     for x, piece in enumerate(y_row):
                         if piece.col1 == self.yellow and piece.col2 == self.blue and piece.col3 == self.red:
                             if z == 1:
-                                rotate_edges()
+                                self.evaluate("R' D L D' R D L' D'")
                                 if x == 1:
-                                    rotate_edges()
+                                    self.evaluate("R' D L D' R D L' D'")
 
             if not ((piece := self.pieces[1][0][0]).col1 == self.yellow and piece.col2 == self.green and piece.col3 == self.orange):
                 # back bottom left and back bottom right need to be swapped
-                self.rotate(Move("L", 3))
-                self.rotate(Move("D"))
-                self.rotate(Move("R"))
-                self.rotate(Move("D", 3))
-                self.rotate(Move("L"))
-                self.rotate(Move("D"))
-                self.rotate(Move("R", 3))
+                self.evaluate("L' D R D' L D R' D' L' D R D' L D R'")
 
-                self.rotate(Move("D", 3))
+    def evaluate(self, sequence: str):
+        str_moves = sequence.upper().split(" ")
+        moves = []
+        for move in str_moves:
+            if move in ["F", "B", "R", "L", "U", "D"]:
+                moves.append(Move(move))
 
-                self.rotate(Move("L", 3))
-                self.rotate(Move("D"))
-                self.rotate(Move("R"))
-                self.rotate(Move("D", 3))
-                self.rotate(Move("L"))
-                self.rotate(Move("D"))
-                self.rotate(Move("R", 3))
+            elif move.endswith("'") and move[:-1] in ["F", "B", "R", "L", "U", "D"]:
+                moves.append(Move(move[:-1], 3))
+
+            elif move.endswith("2") and move[:-1] in ["F", "B", "R", "L", "U", "D"]:
+                moves.append(Move(move[:-1], 2))
+
+            # quietly discard invalid moves
+
+        for move in moves:
+            self.rotate(move)
