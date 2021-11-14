@@ -204,8 +204,9 @@ class RubiksCube:
 
                             elif x == layers - 1:
                                 # front bottom right corner
-                                y_layer.append(Corner(Vector3(delta, delta, -delta), self.blue, self.red, self.yellow, piece_width))
-                                y_layer[-1].rotate(rot_z(90))
+                                y_layer.append(Corner(Vector3(delta, delta, -delta), self.yellow, self.blue, self.red, piece_width))
+                                y_layer[-1].rotate(rot_y(-90))
+                                y_layer[-1].rotate(rot_z(180))
 
                             else:
                                 # front bottom edges
@@ -537,6 +538,7 @@ class RubiksCube:
                         self.rotate(Move("D", 3))
                         self.rotate(Move("R", 3))
 
+            # front top left
             for z, z_row in enumerate(self.pieces):
                 for y, y_row in enumerate(z_row):
                     for x, piece in enumerate(y_row):
@@ -558,6 +560,7 @@ class RubiksCube:
                             self.rotate(Move("D"))
                             self.rotate(Move("L", 3))
 
+            # front top right
             for z, z_row in enumerate(self.pieces):
                 for y, y_row in enumerate(z_row):
                     for x, piece in enumerate(y_row):
@@ -579,6 +582,7 @@ class RubiksCube:
                             self.rotate(Move("D", 3))
                             self.rotate(Move("R"))
 
+            # back top left
             for z, z_row in enumerate(self.pieces):
                 for y, y_row in enumerate(z_row):
                     for x, piece in enumerate(y_row):
@@ -600,6 +604,7 @@ class RubiksCube:
                             self.rotate(Move("D", 3))
                             self.rotate(Move("L"))
 
+            # back top right
             for z, z_row in enumerate(self.pieces):
                 for y, y_row in enumerate(z_row):
                     for x, piece in enumerate(y_row):
@@ -620,3 +625,57 @@ class RubiksCube:
                             self.rotate(Move("R"))
                             self.rotate(Move("D"))
                             self.rotate(Move("R", 3))
+
+            # front bottom left
+            for z, z_row in enumerate(self.pieces):
+                for y, y_row in enumerate(z_row):
+                    for x, piece in enumerate(y_row):
+                        if piece.col1 == self.yellow and piece.col2 == self.red and piece.col3 == self.green:
+                            if z == 1:
+                                if x == 0:
+                                    self.rotate(Move("D"))
+
+                                else:
+                                    self.rotate(Move("D", 2))
+
+                            elif x == 1:
+                                self.rotate(Move("D", 3))
+
+            def rotate_edges():
+                self.rotate(Move("R", 3))
+                self.rotate(Move("D"))
+                self.rotate(Move("L"))
+                self.rotate(Move("D", 3))
+                self.rotate(Move("R"))
+                self.rotate(Move("D"))
+                self.rotate(Move("L", 3))
+                self.rotate(Move("D", 3))
+
+            for z, z_row in enumerate(self.pieces):
+                for y, y_row in enumerate(z_row):
+                    for x, piece in enumerate(y_row):
+                        if piece.col1 == self.yellow and piece.col2 == self.blue and piece.col3 == self.red:
+                            if z == 1:
+                                rotate_edges()
+                                if x == 1:
+                                    rotate_edges()
+
+            if not ((piece := self.pieces[1][0][0]).col1 == self.yellow and piece.col2 == self.green and piece.col3 == self.orange):
+                # back bottom left and back bottom right need to be swapped
+                self.rotate(Move("L", 3))
+                self.rotate(Move("D"))
+                self.rotate(Move("R"))
+                self.rotate(Move("D", 3))
+                self.rotate(Move("L"))
+                self.rotate(Move("D"))
+                self.rotate(Move("R", 3))
+
+                self.rotate(Move("D", 3))
+
+                self.rotate(Move("L", 3))
+                self.rotate(Move("D"))
+                self.rotate(Move("R"))
+                self.rotate(Move("D", 3))
+                self.rotate(Move("L"))
+                self.rotate(Move("D"))
+                self.rotate(Move("R", 3))
