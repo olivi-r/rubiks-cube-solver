@@ -41,7 +41,7 @@ if __name__ == "__main__":
 
     cam = Camera(Vector3(0, 0, -30), Vector3(0, 0, 0), 0.1)
 
-    cube = RubiksCube(12, 2)
+    cube = RubiksCube(12, 3)
 
     global_rotation = Matrix3x3([[1, 0, 0], [0, 1, 0], [0, 0, 1]])
 
@@ -89,7 +89,6 @@ if __name__ == "__main__":
                     mouse_delta = pygame.mouse.get_rel()
                     global_rotation = rot_x(0.25 * mouse_delta[1]) * global_rotation
                     global_rotation = rot_y(0.25 * mouse_delta[0]) * global_rotation
-
 
             if event.type == pygame.MOUSEBUTTONUP:
                 dragging = False
