@@ -723,20 +723,8 @@ class RubiksCube:
                 # back bottom left and back bottom right need to be swapped
                 self.evaluate("L' D R D' L D R' D' L' D R D' L D R'")
 
-            while not all(self.pieces[i][0][j].orient == 0 for i in range(2) for j in range(2)):
-                rotated = 0
-                if self.pieces[0][0][0].orient == 0:
-                    if self.pieces[1][0][0].orient != 0:
-                        self.rotate(Move("D"))
-                        rotated = 1
-
-                    elif self.pieces[1][0][1].orient != 0:
-                        self.rotate(Move("D", 2))
-                        rotated = 2
-
-                    elif self.pieces[0][0][1].orient != 0:
-                        self.rotate(Move("D", 3))
-                        rotated = 3
+            for _ in range(4):
+                self.rotate(Move("D"))
 
                 if self.pieces[0][0][0].orient == 1:
                     if self.pieces[0][0][1].orient == 2:
@@ -748,20 +736,18 @@ class RubiksCube:
                     elif self.pieces[1][0][1].orient == 2:
                         self.evaluate("L' U L U' L' U L D2 L' U' L U L' U' L D2")
 
-                    else:
-                        # 3 pieces orientated incorrectly
-                        if self.pieces[0][0][1].orient == 0:
-                            self.evaluate("L' U L U' L' U L D L' U' L U L' U2 L U L' U' L D L' U L U' L' U L D2")
+                    elif self.pieces[0][0][1].orient == 0:
+                        self.evaluate("L' U L U' L' U L D L' U' L U L' U2 L U L' U' L D L' U L U' L' U L D2")
 
-                        elif self.pieces[1][0][0].orient == 0:
-                            self.evaluate("L' U L U' L' U L D' L' U' L U L' U2 L U L' U' L D' L' U L U' L' U L D2")
+                    elif self.pieces[1][0][0].orient == 0:
+                        self.evaluate("L' U L U' L' U L D' L' U' L U L' U2 L U L' U' L D' L' U L U' L' U L D2")
 
-                        elif self.pieces[1][0][1].orient == 0:
-                            self.evaluate("D' L' U L U' L' U L D L' U' L U L' U2 L U L' U' L D L' U L U' L' U L D'")
+                    elif self.pieces[1][0][1].orient == 0:
+                        self.evaluate("D' L' U L U' L' U L D L' U' L U L' U2 L U L' U' L D L' U L U' L' U L D'")
 
-                elif self.pieces[0][0][0].orient == 2:
+                if self.pieces[0][0][0].orient == 2:
                     if self.pieces[0][0][1].orient == 1:
-                        self.evaluate("L' U' L U L' U' L D' L' U' L U' L' U L D")
+                        self.evaluate("L' U' L U L' U' L D' L' U L U' L' U L D")
 
                     elif self.pieces[1][0][0].orient == 1:
                         self.evaluate("L' U' L U L' U' L D L' U L U' L' U L D'")
@@ -769,19 +755,15 @@ class RubiksCube:
                     elif self.pieces[1][0][1].orient == 1:
                         self.evaluate("L' U' L U L' U' L D2 L' U L U' L' U L D2")
 
-                    else:
-                        # 3 pieces orientated incorrectly
-                        if self.pieces[0][0][1].orient == 0:
-                            self.evaluate("L' U' L U L' U' L D L' U L U' L' U2 L U' L' U L D L' U' L U L' U' L D2")
+                    elif self.pieces[0][0][1].orient == 0:
+                        self.evaluate("L' U' L U L' U' L D L' U L U' L' U2 L U' L' U L D L' U' L U L' U' L D2")
 
-                        elif self.pieces[1][0][0].orient == 0:
-                            self.evaluate("L' U' L U L' U' L D' L' U L U' L' U2 L U' L' U L D' L' U' L U L' U' L D2")
+                    elif self.pieces[1][0][0].orient == 0:
+                        self.evaluate("L' U' L U L' U' L D' L' U L U' L' U2 L U' L' U L D' L' U' L U L' U' L D2")
 
-                        elif self.pieces[1][0][1].orient == 0:
-                            self.evaluate("D' L' U' L U L' U' L D L' U L U' L' U2 L U' L' U L D L' U' L U L' U' L D'")
+                    elif self.pieces[1][0][1].orient == 0:
+                        self.evaluate("D' L' U' L U L' U' L D L' U L U' L' U2 L U' L' U L D L' U' L U L' U' L D'")
 
-                if rotated != 0:
-                    self.rotate(Move("D", 4 - rotated))
 
     def evaluate(self, sequence: str):
         str_moves = sequence.upper().split(" ")

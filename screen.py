@@ -1,5 +1,5 @@
 from math3d import Camera, Matrix3x3, Polygon, Triangle, Vector3, rot_x, rot_y
-from cube import Move, RubiksCube
+from cube import RubiksCube
 import os; os.environ["PYGAME_HIDE_SUPPORT_PROMPT"] = "1"
 import pygame
 import tkinter
