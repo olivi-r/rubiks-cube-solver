@@ -1,9 +1,9 @@
 from math3d import Camera, Matrix3x3, Polygon, Triangle, Vector3, rot_x, rot_y
-from cube import RubiksCube
+from cube import Move, RubiksCube
 import os; os.environ["PYGAME_HIDE_SUPPORT_PROMPT"] = "1"
 import pygame
 import tkinter
-from tkinter.filedialog import asksaveasfilename
+from tkinter.filedialog import askopenfilename, asksaveasfilename
 
 
 def bubble_sort(to_sort: list) -> None:
@@ -41,8 +41,7 @@ if __name__ == "__main__":
 
     cam = Camera(Vector3(0, 0, -30), Vector3(0, 0, 0), 0.1)
 
-    cube = RubiksCube(12, 5)
-    cube.scramble()
+    cube = RubiksCube(12, 2)
 
     global_rotation = Matrix3x3([[1, 0, 0], [0, 1, 0], [0, 0, 1]])
 
@@ -61,8 +60,23 @@ if __name__ == "__main__":
                     name = asksaveasfilename(initialfile="rubiks cube.save", defaultextension=".save", filetypes=[
                         ("All files", "*.*"), ("Save state", "*.save")
                     ])
-                    with open(name, "w+") as fp:
-                        fp.write(cube.save_state(global_rotation))
+                    if name != "":
+                        with open(name, "w+") as fp:
+                            fp.write(cube.save_state(global_rotation))
+
+                if event.key == pygame.K_a:
+                    name = askopenfilename(defaultextension=".save", filetypes=[
+                        ("All files", "*.*"), ("Save state", "*.save")
+                    ])
+                    if os.path.exists(name):
+                        with open(name, "r") as fp:
+                            cube, global_rotation = cube.load_state(fp.read())
+
+                if event.key == pygame.K_0:
+                    cube.scramble()
+
+                if event.key == pygame.K_1:
+                    cube.solve()
 
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if event.button == 1:
