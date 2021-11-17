@@ -37,7 +37,7 @@ if __name__ == "__main__":
     headless_container.withdraw()
     headless_container.update()
 
-    display = pygame.display.set_mode(dimensions)
+    display = pygame.display.set_mode(dimensions, pygame.RESIZABLE)
 
     cam = Camera(Vector3(0, 0, -30), Vector3(0, 0, 0), 0.1)
 
@@ -54,6 +54,10 @@ if __name__ == "__main__":
             if event.type == pygame.QUIT:
                 # handle close button event
                 running = False
+
+            if event.type == pygame.VIDEORESIZE:
+                # adjust content when window resized
+                dimensions = event.size
 
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_s:
