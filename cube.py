@@ -1308,6 +1308,84 @@ class RubiksCube:
                                     else:
                                         self.evaluate("R D' R' D' B' D B D' R' D R D F D' F'")
 
+            for z, z_row in enumerate(self.pieces):
+                for y, y_row in enumerate(z_row):
+                    for x, piece in enumerate(y_row):
+                        if isinstance(piece, Edge) and piece.col1 == self.green and piece.col2 == self.orange:
+                            if y == 0:
+                                if z == 0:
+                                    if piece.orient == 0:
+                                        self.evaluate("D L' D L D B D' B'")
+
+                                    else:
+                                        self.evaluate("B D' B' D' L' D L")
+
+                                elif z == 2:
+                                    if piece.orient == 0:
+                                        self.evaluate("D' L' D L D B D' B'")
+
+                                    else:
+                                        self.evaluate("D2 B D' B' D' L' D L")
+
+                                elif x == 0:
+                                    if piece.orient == 0:
+                                        self.evaluate("D2 L' D L D B D' B'")
+
+                                    else:
+                                        self.evaluate("D B D' B' D' L' D L")
+
+                                elif piece.orient == 0:
+                                    self.evaluate("L' D L D B D' B'")
+
+                                else:
+                                    self.evaluate("D' B D' B' D' L' D L")
+
+                            else:
+                                if x == 0 and piece.orient == 3:
+                                    self.evaluate("B D' B' D' L' D L D' B D' B' D' L' D L")
+
+                                elif x == 2:
+                                    if piece.orient == 2:
+                                        self.evaluate("R D' R' D' B' D B B D' B' D' L' D L")
+
+                                    else:
+                                        self.evaluate("R D' R' D' B' D B D L' D L D B D' B'")
+
+            for z, z_row in enumerate(self.pieces):
+                for y, y_row in enumerate(z_row):
+                    for x, piece in enumerate(y_row):
+                        if isinstance(piece, Edge) and piece.col1 == self.blue and piece.col2 == self.orange:
+                            if y == 0:
+                                if z == 0:
+                                    if piece.orient == 0:
+                                        self.evaluate("D' R D' R' D' B' D B")
+
+                                    else:
+                                        self.evaluate("B' D B D R D' R'")
+
+                                elif z == 2:
+                                    if piece.orient == 0:
+                                        self.evaluate("D R D' R' D' B' D B")
+
+                                    else:
+                                        self.evaluate("D2 D B D R D' R'")
+
+                                elif x == 0:
+                                    if piece.orient == 0:
+                                        self.evaluate("R D' R' D' B' D B")
+
+                                    else:
+                                        self.evaluate("D B' D B D R D' R'")
+
+                                elif piece.orient == 0:
+                                    self.evaluate("D2 R D' R' D' B' D B")
+
+                                else:
+                                    self.evaluate("D' B' D B D R D' R'")
+
+                            elif piece.orient == 3:
+                                self.evaluate("R D' R' D' B' D B D' R D' R' D' B' D B")
+
     def evaluate(self, sequence: str):
         str_moves = sequence.upper().split(" ")
         moves = []
