@@ -1283,6 +1283,13 @@ class RubiksCube:
                                     else:
                                         self.evaluate("D' F D' F' D' R' D R")
 
+                                else:
+                                    if piece.orient == 0:
+                                        self.evaluate("D2 R' D R D F D' F'")
+
+                                    else:
+                                        self.evaluate("D F D' F' D' R' D R")
+
                             else:
                                 if z == 0 and x == 2 and piece.orient == 3:
                                     self.evaluate("F D' F' D' R' D R D' F D' F' D' R' D R")
