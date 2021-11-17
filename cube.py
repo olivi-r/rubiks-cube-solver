@@ -1368,7 +1368,7 @@ class RubiksCube:
                                         self.evaluate("D R D' R' D' B' D B")
 
                                     else:
-                                        self.evaluate("D2 D B D R D' R'")
+                                        self.evaluate("D2 B' D B D R D' R'")
 
                                 elif x == 0:
                                     if piece.orient == 0:
