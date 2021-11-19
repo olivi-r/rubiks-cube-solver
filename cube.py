@@ -1386,6 +1386,47 @@ class RubiksCube:
                             elif piece.orient == 3:
                                 self.evaluate("R D' R' D' B' D B D' R D' R' D' B' D B")
 
+
+            # align bottom edges
+            if self.pieces[2][0][1].col2 == self.red:
+                self.evaluate("D2")
+
+            elif self.pieces[1][0][0].col2 == self.red:
+                self.evaluate("D")
+
+            elif self.pieces[1][0][2].col2 == self.red:
+                self.evaluate("D'")
+
+            if self.pieces[2][0][1].col2 == self.green:
+                self.evaluate("B D2 B' D' B D' B' D'")
+
+            elif self.pieces[1][0][2].col2 == self.green:
+                self.evaluate("F D2 F' D' F D' F' D2")
+
+            if self.pieces[2][0][1].col2 == self.blue:
+                self.evaluate("R D2 R' D' R D' R' D'")
+
+            # rotate bottom edges properly
+            if self.pieces[0][0][1].orient == 1:
+                if self.pieces[1][0][0].orient == 1:
+                    self.evaluate("L R' F L' R U' L R' F2 L' R D L R' F2 L' R U L R' F' L' R D'")
+
+                elif self.pieces[1][0][2].orient == 1:
+                    self.evaluate("L R' F L' R U' L R' F2 L' R D' L R' F2 L' R U L R' F' L' R D")
+
+                elif self.pieces[2][0][1].orient == 1:
+                    self.evaluate("L R' F L' R U' L R' F2 L' R D2 L R' F2 L' R U L R' F' L' R D2")
+
+            if self.pieces[1][0][0].orient == 1:
+                if self.pieces[1][0][2].orient == 1:
+                    self.evaluate("D L R' F L' R U' L R' F2 L' R D2 L R' F2 L' R U L R' F' L' R D")
+
+                elif self.pieces[2][0][1].orient == 1:
+                    self.evaluate("D L R' F L' R U' L R' F2 L' R D L R' F2 L' R U L R' F' L' R D2")
+
+            if self.pieces[2][0][1].orient == 1:
+                self.evaluate("D2 L R' F L' R U' L R' F2 L' R D L R' F2 L' R U L R' F' L' R D")
+
     def evaluate(self, sequence: str):
         str_moves = sequence.upper().split(" ")
         moves = []
