@@ -1427,6 +1427,46 @@ class RubiksCube:
             if self.pieces[2][0][1].orient == 1:
                 self.evaluate("D2 L R' F L' R U' L R' F2 L' R D L R' F2 L' R U L R' F' L' R D")
 
+            # align bottom corners
+            if not (self.pieces[0][0][0].col2 == self.red or self.pieces[0][0][2].col2 == self.blue or self.pieces[2][0][2].col2 == self.orange or self.pieces[2][0][0].col2 == self.green):
+                # no corners in correct positions
+                if self.pieces[2][0][0].col2 == self.red:
+                    self.evaluate("R' D L D' R D L' D'")
+
+                elif self.pieces[2][0][2].col2 == self.red:
+                    self.evaluate("R' D L D' R D L' D' R' D L D' R D L' D'")
+
+                else:
+                    self.evaluate("D L D' R' D L' D' R")
+
+            if self.pieces[0][0][0].col2 == self.red:
+                if self.pieces[2][0][0].col2 == self.blue:
+                    self.evaluate("R' D L D' R D L' D'")
+
+                elif self.pieces[0][0][2].col2 == self.green:
+                    self.evaluate("D L D' R' D L' D' R")
+
+            elif self.pieces[0][0][2].col2 == self.blue:
+                if self.pieces[0][0][0].col2 == self.orange:
+                    self.evaluate("B' D F D' B D F' D'")
+
+                elif self.pieces[0][0][0].col2 == self.green:
+                    self.evaluate("D F D' B' D F' D' B")
+
+            elif self.pieces[2][0][2].col2 == self.orange:
+                if self.pieces[0][0][2].col2 == self.green:
+                    self.evaluate("L' D R D' L D R' D'")
+
+                elif self.pieces[2][0][0].col2 == self.blue:
+                    self.evaluate("D R D' L' D R' D' L")
+
+            elif self.pieces[2][0][0].col2 == self.green:
+                if self.pieces[2][0][2].col2 == self.red:
+                    self.evaluate("F' D B D' F D B' D'")
+
+                elif self.pieces[0][0][0].col2 == self.orange:
+                    self.evaluate("D B D' F' D B' D' F")
+
     def evaluate(self, sequence: str):
         str_moves = sequence.upper().split(" ")
         moves = []
