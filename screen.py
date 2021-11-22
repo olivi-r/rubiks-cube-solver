@@ -182,7 +182,7 @@ if __name__ == "__main__":
                 else:
                     pygame.draw.polygon(display, cube.dimmed[tri.col], points)
 
-                pygame.draw.lines(display, "#000000", False, points)
+                pygame.draw.lines(display, "#000000", False, points, width=5)
 
         pygame.display.update()
 
