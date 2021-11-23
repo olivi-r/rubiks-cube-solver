@@ -179,7 +179,7 @@ class RubiksCube:
             assert isinstance(width, (int, float))
 
         except AssertionError:
-            layers = 2
+            self.layers = layers = 2
             width = 12
 
         self.width = width
