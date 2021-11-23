@@ -1467,6 +1467,47 @@ class RubiksCube:
                 elif self.pieces[0][0][0].col2 == self.orange:
                     self.evaluate("D B D' F' D B' D' F")
 
+            for _ in range(4):
+                self.rotate(Move("D"))
+
+                if self.pieces[0][0][0].orient == 1:
+                    if self.pieces[0][0][2].orient == 2:
+                        self.evaluate("L' U L U' L' U L D' L' U' L U L' U' L D")
+
+                    elif self.pieces[2][0][0].orient == 2:
+                        self.evaluate("L' U L U' L' U L D L' U' L U L' U' L D'")
+
+                    elif self.pieces[2][0][2].orient == 2:
+                        self.evaluate("L' U L U' L' U L D2 L' U' L U L' U' L D2")
+
+                    elif self.pieces[0][0][2].orient == 0:
+                        self.evaluate("L' U L U' L' U L D L' U' L U L' U2 L U L' U' L D L' U L U' L' U L D2")
+
+                    elif self.pieces[2][0][0].orient == 0:
+                        self.evaluate("L' U L U' L' U L D' L' U' L U L' U2 L U L' U' L D' L' U L U' L' U L D2")
+
+                    elif self.pieces[2][0][2].orient == 0:
+                        self.evaluate("D' L' U L U' L' U L D L' U' L U L' U2 L U L' U' L D L' U L U' L' U L D'")
+
+                if self.pieces[0][0][0].orient == 2:
+                    if self.pieces[0][0][2].orient == 1:
+                        self.evaluate("L' U' L U L' U' L D' L' U L U' L' U L D")
+
+                    elif self.pieces[2][0][0].orient == 1:
+                        self.evaluate("L' U' L U L' U' L D L' U L U' L' U L D'")
+
+                    elif self.pieces[2][0][2].orient == 1:
+                        self.evaluate("L' U' L U L' U' L D2 L' U L U' L' U L D2")
+
+                    elif self.pieces[0][0][2].orient == 0:
+                        self.evaluate("L' U' L U L' U' L D L' U L U' L' U2 L U' L' U L D L' U' L U L' U' L D2")
+
+                    elif self.pieces[2][0][0].orient == 0:
+                        self.evaluate("L' U' L U L' U' L D' L' U L U' L' U2 L U' L' U L D' L' U' L U L' U' L D2")
+
+                    elif self.pieces[2][0][2].orient == 0:
+                        self.evaluate("D' L' U' L U L' U' L D L' U L U' L' U2 L U' L' U L D L' U' L U L' U' L D'")
+
     def evaluate(self, sequence: str):
         str_moves = sequence.upper().split(" ")
         moves = []
