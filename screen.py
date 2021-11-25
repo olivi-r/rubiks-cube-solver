@@ -31,6 +31,8 @@ dimensions = [800, 450]
 display_mode = True
 
 if __name__ == "__main__":
+    pygame.font.init()
+    font = pygame.font.SysFont("Arial", 12)
     pygame.display.set_caption("Rubik's Cube Solver")
     random.seed(time.time())
 
@@ -53,6 +55,8 @@ if __name__ == "__main__":
 
     dragging = False
     piece_selected = False
+
+    fps_counter = pygame.time.Clock()
 
     running = True
     while running:
@@ -192,10 +196,14 @@ if __name__ == "__main__":
 
                 pygame.draw.lines(display, "#000000", False, points, width=5)
 
+        fps_counter.tick()
+        fps = fps_counter.get_fps()
+        fps_text = font.render(f"FPS: {int(fps)}", False, (0, 0, 0))
+        display.blit(fps_text, (5, 5))
         pygame.display.update()
 
-        if display_mode:
-            global_rotation = rot_y(3) * global_rotation
+        if display_mode and fps != 0:
+            global_rotation = rot_y(10 / fps) * global_rotation
 
     pygame.quit()
     cube.running = False
