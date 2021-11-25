@@ -663,9 +663,9 @@ class RubiksCube:
 
             elif self.display:
                 if self.solved:
-                    time.sleep(3)
+                    time.sleep(6)
                     self.scramble()
-                    self.moving_threads.append(threading.Thread(target=time.sleep, args=(3,)))
+                    self.moving_threads.append(threading.Thread(target=time.sleep, args=(6,)))
                     self.solve()
 
     def rotate_pieces(self, face: str, depth: int, steps: int, pieces: list) -> None:

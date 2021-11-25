@@ -45,7 +45,7 @@ if __name__ == "__main__":
 
     cube = RubiksCube(12, 3, 100, display_mode)
 
-    display_angle = rot_z(45) * rot_x(30)
+    display_angle = rot_z(45) * rot_x(45)
     global_rotation = Matrix3x3([[1, 0, 0], [0, 1, 0], [0, 0, 1]])
 
     if display_mode:
