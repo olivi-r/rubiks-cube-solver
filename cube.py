@@ -151,7 +151,7 @@ class Corner(Mesh):
 
 
 class RubiksCube:
-    def __init__(self, width: float, layers: int, turn_duration: float):
+    def __init__(self, width: float, layers: int, turn_duration: float, display: bool):
         self.white = "#ffffff"
         self.yellow = "#ffff00"
         self.red = "#ff0000"
@@ -353,11 +353,21 @@ class RubiksCube:
 
             self.pieces.append(z_layer)
 
+        self.display = display
+        self.initial = [[[piece for piece in y] for y in z] for z in self.pieces]
+
         self.running = True
         self.tmp_pieces = self.pieces
         self.moving_threads = []
         threading.Thread(target=self.handle_movement).start()
         self.duration = turn_duration
+
+    @property
+    def solved(self):
+        pieces = [piece for z in self.pieces for y in z for piece in y]
+        initial = [piece for z in self.initial for y in z for piece in y]
+        return all(map(lambda x: x[0] is x[1], zip(pieces, initial)))
+
 
     def rotate(self, move: Move) -> None:
         face = move.face + ("2" if move.turns == 2 else ("'" if move.turns == 3 else ""))
@@ -650,6 +660,13 @@ class RubiksCube:
                 self.moving_threads[0].start()
                 self.moving_threads[0].join()
                 self.moving_threads.pop(0)
+
+            elif self.display:
+                if self.solved:
+                    time.sleep(3)
+                    self.scramble()
+                    self.moving_threads.append(threading.Thread(target=time.sleep, args=(3,)))
+                    self.solve()
 
     def rotate_pieces(self, face: str, depth: int, steps: int, pieces: list) -> None:
         # rotate pieces in scene

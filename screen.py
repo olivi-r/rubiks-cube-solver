@@ -1,5 +1,5 @@
-from math3d import Camera, Matrix3x3, Polygon, Triangle, Vector3, rot_x, rot_y
-from cube import RubiksCube
+from math3d import Camera, Matrix3x3, Polygon, Triangle, Vector3, rot_x, rot_y, rot_z
+from cube import RubiksCube, random, time
 import os; os.environ["PYGAME_HIDE_SUPPORT_PROMPT"] = "1"
 import pygame
 import tkinter
@@ -28,9 +28,11 @@ def sign(p1: list, p2: list, p3: list) -> float:
 
 dimensions = [800, 450]
 
+display_mode = True
 
 if __name__ == "__main__":
     pygame.display.set_caption("Rubik's Cube Solver")
+    random.seed(time.time())
 
     # create window for tkinter's save dialog to use and hide it
     headless_container = tkinter.Tk()
@@ -41,9 +43,13 @@ if __name__ == "__main__":
 
     cam = Camera(Vector3(0, 0, -30), Vector3(0, 0, 0), 0.1)
 
-    cube = RubiksCube(12, 3, 100)
+    cube = RubiksCube(12, 3, 100, display_mode)
 
+    display_angle = rot_z(45) * rot_x(30)
     global_rotation = Matrix3x3([[1, 0, 0], [0, 1, 0], [0, 0, 1]])
+
+    if display_mode:
+        global_rotation = display_angle * global_rotation
 
     dragging = False
     piece_selected = False
@@ -59,43 +65,44 @@ if __name__ == "__main__":
                 # adjust content when window resized
                 dimensions = event.size
 
-            if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_s:
-                    name = asksaveasfilename(initialfile="rubiks cube.save", defaultextension=".save", filetypes=[
-                        ("All files", "*.*"), ("Save state", "*.save")
-                    ])
-                    if name != "":
-                        with open(name, "w+") as fp:
-                            fp.write(cube.save_state(global_rotation))
+            if not display_mode:
+                if event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_s:
+                        name = asksaveasfilename(initialfile="rubiks cube.save", defaultextension=".save", filetypes=[
+                            ("All files", "*.*"), ("Save state", "*.save")
+                        ])
+                        if name != "":
+                            with open(name, "w+") as fp:
+                                fp.write(cube.save_state(global_rotation))
 
-                if event.key == pygame.K_a:
-                    name = askopenfilename(defaultextension=".save", filetypes=[
-                        ("All files", "*.*"), ("Save state", "*.save")
-                    ])
-                    if os.path.exists(name):
-                        with open(name, "r") as fp:
-                            cube, global_rotation = cube.load_state(fp.read())
+                    if event.key == pygame.K_a:
+                        name = askopenfilename(defaultextension=".save", filetypes=[
+                            ("All files", "*.*"), ("Save state", "*.save")
+                        ])
+                        if os.path.exists(name):
+                            with open(name, "r") as fp:
+                                cube, global_rotation = cube.load_state(fp.read())
 
-                if event.key == pygame.K_0:
-                    cube.scramble()
+                    if event.key == pygame.K_0:
+                        cube.scramble()
 
-                if event.key == pygame.K_1:
-                    cube.solve()
+                    if event.key == pygame.K_1:
+                        cube.solve()
 
-            if event.type == pygame.MOUSEBUTTONDOWN:
-                if event.button == 1:
-                    if not dragging and not piece_selected:
-                        dragging = True
-                        pygame.mouse.get_rel()
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    if event.button == 1:
+                        if not dragging and not piece_selected:
+                            dragging = True
+                            pygame.mouse.get_rel()
 
-            if event.type == pygame.MOUSEMOTION:
-                if dragging:
-                    mouse_delta = pygame.mouse.get_rel()
-                    global_rotation = rot_x(0.25 * mouse_delta[1]) * global_rotation
-                    global_rotation = rot_y(0.25 * mouse_delta[0]) * global_rotation
+                if event.type == pygame.MOUSEMOTION:
+                    if dragging:
+                        mouse_delta = pygame.mouse.get_rel()
+                        global_rotation = rot_x(0.25 * mouse_delta[1]) * global_rotation
+                        global_rotation = rot_y(0.25 * mouse_delta[0]) * global_rotation
 
-            if event.type == pygame.MOUSEBUTTONUP:
-                dragging = False
+                if event.type == pygame.MOUSEBUTTONUP:
+                    dragging = False
 
         display.fill((255, 255, 255))
 
@@ -186,6 +193,9 @@ if __name__ == "__main__":
                 pygame.draw.lines(display, "#000000", False, points, width=5)
 
         pygame.display.update()
+
+        if display_mode:
+            global_rotation = rot_y(3) * global_rotation
 
     pygame.quit()
     cube.running = False
