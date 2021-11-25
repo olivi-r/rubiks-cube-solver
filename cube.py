@@ -359,6 +359,7 @@ class RubiksCube:
         self.running = True
         self.tmp_pieces = self.pieces
         self.moving_threads = []
+        self.moving = False
         threading.Thread(target=self.handle_movement).start()
         self.duration = turn_duration
 
@@ -673,6 +674,8 @@ class RubiksCube:
         if self.duration == 0:
             steps = 1
 
+        self.moving = True
+
         angle = 90/steps
         for _ in range(steps):
             if face == "F":
@@ -696,6 +699,8 @@ class RubiksCube:
             self.tmp_pieces = [[[piece.copy() if piece is not None else None for piece in y] for y in z] for z in pieces]
 
             time.sleep(self.duration / steps / 1000)
+
+        self.moving = False
 
     def scramble(self) -> None:
         random.seed(time.time())

@@ -122,8 +122,13 @@ if __name__ == "__main__":
                     for poly in tmp_piece.polys:
                         backface = False
                         if (poly.triangles[0].p1 - cam.pos).dot(poly.normal) > 0:
-                            # faces pointing away from camera
-                            backface = True
+                            # remove backfaces when cube is complete to maximise frame rate
+                            # backfaces are otherwise coloured in black
+                            if cube.moving:
+                                backface = True
+
+                            else:
+                                continue
 
                         new_poly = Polygon()
                         depths = []
