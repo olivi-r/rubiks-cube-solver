@@ -1,5 +1,5 @@
 from math3d import Matrix3x3, Mesh, Polygon, Triangle, Vector3, rot_x, rot_y, rot_z
-import random, re, time
+import random, re, threading, time
 
 hex_col = re.compile(r"#[\dA-Za-z]{6}")
 
@@ -151,7 +151,7 @@ class Corner(Mesh):
 
 
 class RubiksCube:
-    def __init__(self, width: float, layers: int):
+    def __init__(self, width: float, layers: int, turn_duration: float):
         self.white = "#ffffff"
         self.yellow = "#ffff00"
         self.red = "#ff0000"
@@ -166,7 +166,8 @@ class RubiksCube:
             self.red: "#990000",
             self.orange: "#994300",
             self.blue: "#000099",
-            self.green: "#009900"
+            self.green: "#009900",
+            "#000000": "#000000"  # stop backface dimming breaking
         }
 
         layers = int(layers)
@@ -352,6 +353,12 @@ class RubiksCube:
 
             self.pieces.append(z_layer)
 
+        self.running = True
+        self.tmp_pieces = self.pieces
+        self.moving_threads = []
+        threading.Thread(target=self.handle_movement).start()
+        self.duration = turn_duration
+
     def rotate(self, move: Move) -> None:
         face = move.face + ("2" if move.turns == 2 else ("'" if move.turns == 3 else ""))
         depth = move.depth
@@ -367,9 +374,6 @@ class RubiksCube:
                 depth = 0
 
         if face == "F":
-            # rotate pieces in scene
-            [self.pieces[depth][i][j].rotate(rot_z(90)) for i in range(self.layers) for j in range(self.layers) if self.pieces[depth][i][j] is not None]
-
             if depth == 0:
                 # update corner orientation
                 self.pieces[0][self.layers - 1][0].orient = (self.pieces[0][self.layers - 1][0].orient + 2) % 3
@@ -419,8 +423,6 @@ class RubiksCube:
 
         elif face == "B":
             depth = self.layers - depth - 1
-            # rotate pieces in scene
-            [self.pieces[depth][i][j].rotate(rot_z(-90)) for i in range(self.layers) for j in range(self.layers) if self.pieces[depth][i][j] is not None]
 
             if depth == self.layers - 1:
                 # update corner orientation
@@ -471,8 +473,6 @@ class RubiksCube:
 
         elif face == "R":
             depth = self.layers - depth - 1
-            # rotate pieces in scene
-            [self.pieces[i][j][depth].rotate(rot_x(-90)) for i in range(self.layers) for j in range(self.layers) if self.pieces[i][j][depth] is not None]
 
             if depth == self.layers - 1:
                 # update corner orientation
@@ -522,9 +522,6 @@ class RubiksCube:
                     self.pieces[j][self.layers - i - 1][depth] = tmp
 
         elif face == "L":
-            # rotate pieces in scene
-            [self.pieces[i][j][depth].rotate(rot_x(90)) for i in range(self.layers) for j in range(self.layers) if self.pieces[i][j][depth] is not None]
-
             if depth == 0:
                 # update corner orientation
                 self.pieces[self.layers - 1][self.layers - 1][0].orient = (self.pieces[self.layers - 1][self.layers - 1][0].orient + 2) % 3
@@ -574,8 +571,6 @@ class RubiksCube:
 
         elif face == "U":
             depth = self.layers - depth - 1
-            # rotate pieces in scene
-            [self.pieces[i][depth][j].rotate(rot_y(-90)) for i in range(self.layers) for j in range(self.layers) if self.pieces[i][depth][j] is not None]
 
             # corner orientation unchanged
 
@@ -607,9 +602,6 @@ class RubiksCube:
                     self.pieces[self.layers - i - 1][depth][j] = tmp
 
         elif face == "D":
-            # rotate pieces in scene
-            [self.pieces[i][depth][j].rotate(rot_y(90)) for i in range(self.layers) for j in range(self.layers) if self.pieces[i][depth][j] is not None]
-
             # corner orientation unchanged
 
             # update edge orientation
@@ -646,6 +638,47 @@ class RubiksCube:
         elif face.endswith("2"):
             # 180 degree turn
             [self.rotate(Move(face[:-1], 1, depth)) for _ in range(2)]
+
+        # get copy of pieces to allow updating future positions before the actual pieces have stopped rotating
+        pieces = [[[piece for piece in y] for y in z] for z in self.pieces]
+
+        self.moving_threads.append(threading.Thread(target=self.rotate_pieces, args=(face, depth, 3, pieces)))
+
+    def handle_movement(self) -> None:
+        while self.running:
+            if self.moving_threads:
+                self.moving_threads[0].start()
+                self.moving_threads[0].join()
+                self.moving_threads.pop(0)
+
+    def rotate_pieces(self, face: str, depth: int, steps: int, pieces: list) -> None:
+        # rotate pieces in scene
+        if self.duration == 0:
+            steps = 1
+
+        angle = 90/steps
+        for _ in range(steps):
+            if face == "F":
+                [pieces[depth][i][j].rotate(rot_z(angle)) for i in range(self.layers) for j in range(self.layers) if pieces[depth][i][j] is not None]
+
+            elif face == "B":
+                [pieces[depth][i][j].rotate(rot_z(-angle)) for i in range(self.layers) for j in range(self.layers) if pieces[depth][i][j] is not None]
+
+            elif face == "R":
+                [pieces[i][j][depth].rotate(rot_x(-angle)) for i in range(self.layers) for j in range(self.layers) if pieces[i][j][depth] is not None]
+
+            elif face == "L":
+                [pieces[i][j][depth].rotate(rot_x(angle)) for i in range(self.layers) for j in range(self.layers) if pieces[i][j][depth] is not None]
+
+            elif face == "U":
+                [pieces[i][depth][j].rotate(rot_y(-angle)) for i in range(self.layers) for j in range(self.layers) if pieces[i][depth][j] is not None]
+
+            elif face == "D":
+                [pieces[i][depth][j].rotate(rot_y(angle)) for i in range(self.layers) for j in range(self.layers) if pieces[i][depth][j] is not None]
+
+            self.tmp_pieces = [[[piece.copy() if piece is not None else None for piece in y] for y in z] for z in pieces]
+
+            time.sleep(self.duration / steps / 1000)
 
     def scramble(self) -> None:
         random.seed(time.time())

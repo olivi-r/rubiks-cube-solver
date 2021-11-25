@@ -41,7 +41,7 @@ if __name__ == "__main__":
 
     cam = Camera(Vector3(0, 0, -30), Vector3(0, 0, 0), 0.1)
 
-    cube = RubiksCube(12, 3)
+    cube = RubiksCube(12, 3, 100)
 
     global_rotation = Matrix3x3([[1, 0, 0], [0, 1, 0], [0, 0, 1]])
 
@@ -100,7 +100,7 @@ if __name__ == "__main__":
         display.fill((255, 255, 255))
 
         to_draw = []
-        for z in cube.pieces:
+        for z in cube.tmp_pieces:
             for y in z:
                 for piece in y:
                     if piece is None:
@@ -109,9 +109,10 @@ if __name__ == "__main__":
                     tmp_piece = piece.copy()
                     tmp_piece.rotate(global_rotation)
                     for poly in tmp_piece.polys:
+                        backface = False
                         if (poly.triangles[0].p1 - cam.pos).dot(poly.normal) > 0:
-                            # remove faces pointing away from camera
-                            continue
+                            # faces pointing away from camera
+                            backface = True
 
                         new_poly = Polygon()
                         depths = []
@@ -121,7 +122,7 @@ if __name__ == "__main__":
                                 cam.world_to_camera(triangle.p1),
                                 cam.world_to_camera(triangle.p2),
                                 cam.world_to_camera(triangle.p3),
-                                triangle.col
+                                triangle.col if not backface else "#000000"
                             )
                             new_poly.triangles.append(new_triangle)
 
@@ -187,3 +188,4 @@ if __name__ == "__main__":
         pygame.display.update()
 
     pygame.quit()
+    cube.running = False
