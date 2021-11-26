@@ -356,6 +356,7 @@ class RubiksCube:
         self.display = display
         self.initial = [[[piece for piece in y] for y in z] for z in self.pieces]
 
+        # initialize movement thread
         self.running = True
         self.tmp_pieces = self.pieces
         self.moving_threads = []
@@ -365,10 +366,10 @@ class RubiksCube:
 
     @property
     def solved(self):
+        # detect if the cube is in its solved state
         pieces = [piece for z in self.pieces for y in z for piece in y]
         initial = [piece for z in self.initial for y in z for piece in y]
         return all(map(lambda x: x[0] is x[1], zip(pieces, initial)))
-
 
     def rotate(self, move: Move) -> None:
         face = move.face + ("2" if move.turns == 2 else ("'" if move.turns == 3 else ""))
@@ -658,11 +659,13 @@ class RubiksCube:
     def handle_movement(self) -> None:
         while self.running:
             if self.moving_threads:
-                self.moving_threads[0].start()
-                self.moving_threads[0].join()
-                self.moving_threads.pop(0)
+                # execute each enqueued movement thread synchronously independent of main thread to stop display freezing
+                thread = self.moving_threads.pop(0)
+                thread.start()
+                thread.join()
 
             elif self.display:
+                # display mode: scramble and solve the cube repeatedly waiting a few seconds inbetween
                 if self.solved:
                     time.sleep(6)
                     self.scramble()
@@ -703,6 +706,7 @@ class RubiksCube:
         self.moving = False
 
     def scramble(self) -> None:
+        # Make random moves on the cube
         random.seed(time.time())
         for i in range(10 * self.layers):
             face = random.choice(["F", "B", "R", "L", "U", "D"])
@@ -744,7 +748,7 @@ class RubiksCube:
 
         return obj, Matrix3x3([rotation[:3], rotation[3:6], rotation[6:]])
 
-    def solve(self):
+    def solve(self) -> None:
         if self.layers == 2:
             # 2x2 cube
 

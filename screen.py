@@ -1,5 +1,5 @@
 from math3d import Camera, Matrix3x3, Polygon, Triangle, Vector3, rot_x, rot_y, rot_z
-from cube import RubiksCube, random, time
+from cube import RubiksCube
 import os; os.environ["PYGAME_HIDE_SUPPORT_PROMPT"] = "1"
 import pygame
 import tkinter
@@ -34,7 +34,6 @@ if __name__ == "__main__":
     pygame.font.init()
     font = pygame.font.SysFont("Arial", 12)
     pygame.display.set_caption("Rubik's Cube Solver")
-    random.seed(time.time())
 
     # create window for tkinter's save dialog to use and hide it
     headless_container = tkinter.Tk()
@@ -45,7 +44,7 @@ if __name__ == "__main__":
 
     cam = Camera(Vector3(0, 0, -30), Vector3(0, 0, 0), 0.1)
 
-    cube = RubiksCube(12, 3, 100, display_mode)
+    cube = RubiksCube(12, 2, 100, display_mode)
 
     display_angle = rot_z(45) * rot_x(45)
     global_rotation = Matrix3x3([[1, 0, 0], [0, 1, 0], [0, 0, 1]])
@@ -101,6 +100,7 @@ if __name__ == "__main__":
 
                 if event.type == pygame.MOUSEMOTION:
                     if dragging:
+                        # convert mouse motion into global rotations for cube
                         mouse_delta = pygame.mouse.get_rel()
                         global_rotation = rot_x(0.25 * mouse_delta[1]) * global_rotation
                         global_rotation = rot_y(0.25 * mouse_delta[0]) * global_rotation
@@ -122,7 +122,7 @@ if __name__ == "__main__":
                     for poly in tmp_piece.polys:
                         backface = False
                         if (poly.triangles[0].p1 - cam.pos).dot(poly.normal) > 0:
-                            # remove backfaces when cube is complete to maximise frame rate
+                            # remove backfaces when cube isn't moving to maximise frame rate
                             # backfaces are otherwise coloured in black
                             if cube.moving:
                                 backface = True
@@ -157,6 +157,9 @@ if __name__ == "__main__":
         for poly in reversed(to_draw):
             # project 3D camera space points to 2D plane
 
+
+            cached_points = {}
+
             selected = False
             if not dragging:
                 for tri in poly[1].triangles:
@@ -165,12 +168,16 @@ if __name__ == "__main__":
                     if selected:
                         continue
 
+                    # project 3D camera space points to 2D plane
                     points = (
                         cam.project2d(tri.p1, *dimensions),
                         cam.project2d(tri.p2, *dimensions),
                         cam.project2d(tri.p3, *dimensions)
                     )
 
+                    cached_points[tri] = points
+
+                    # calculate if mouse intersecting triangle
                     coords = pygame.mouse.get_pos()
                     deltas = [
                         sign(coords, points[0], points[1]),
@@ -186,12 +193,17 @@ if __name__ == "__main__":
                         piece_selected = True
 
             for tri in poly[1].triangles:
-                # project 3D camera space points to 2D plane
-                points = (
-                    cam.project2d(tri.p1, *dimensions),
-                    cam.project2d(tri.p2, *dimensions),
-                    cam.project2d(tri.p3, *dimensions)
-                )
+                try:
+                    points = cached_points[tri]
+
+                except KeyError:
+                    # project 3D camera space points to 2D plane
+                    points = (
+                        cam.project2d(tri.p1, *dimensions),
+                        cam.project2d(tri.p2, *dimensions),
+                        cam.project2d(tri.p3, *dimensions)
+                    )
+
                 # draw shapes
                 if not selected:
                     pygame.draw.polygon(display, tri.col, points)
@@ -201,6 +213,7 @@ if __name__ == "__main__":
 
                 pygame.draw.lines(display, "#000000", False, points, width=5)
 
+        # display fps in top left
         fps_counter.tick()
         fps = fps_counter.get_fps()
         fps_text = font.render(f"FPS: {int(fps)}", False, (0, 0, 0))
@@ -208,6 +221,7 @@ if __name__ == "__main__":
         pygame.display.update()
 
         if display_mode and fps != 0:
+            # frame independently rotate the cube slowly around y-axis
             global_rotation = rot_y(10 / fps) * global_rotation
 
     pygame.quit()
