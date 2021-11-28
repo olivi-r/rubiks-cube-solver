@@ -378,26 +378,25 @@ class RubiksCube:
             # if depth to large rotate the first piece
             depth = 0
 
-        if depth == self.layers - 1:
-            # rotating reverse face
-            opposite = {"F": "B'", "B": "F'", "R": "L'", "L": "R'", "U": "D'", "D": "U'"}
-            if face in opposite:
-                face = opposite[face]
-                depth = 0
-
         if face == "F":
+            # update corner orientation
             if depth == 0:
-                # update corner orientation
                 self.pieces[0][self.layers - 1][0].orient = (self.pieces[0][self.layers - 1][0].orient + 2) % 3
                 self.pieces[0][self.layers - 1][self.layers - 1].orient = (self.pieces[0][self.layers - 1][self.layers - 1].orient + 1) % 3
                 self.pieces[0][0][self.layers - 1].orient = (self.pieces[0][0][self.layers - 1].orient + 2) % 3
                 self.pieces[0][0][0].orient = (self.pieces[0][0][0].orient + 1) % 3
 
+            elif depth == self.layers - 1:
+                self.pieces[self.layers - 1][self.layers - 1][self.layers - 1].orient = (self.pieces[self.layers - 1][self.layers - 1][self.layers - 1].orient + 2) % 3
+                self.pieces[self.layers - 1][self.layers - 1][0].orient = (self.pieces[self.layers - 1][self.layers - 1][0].orient + 1) % 3
+                self.pieces[self.layers - 1][0][self.layers - 1].orient = (self.pieces[self.layers - 1][0][self.layers - 1].orient + 1) % 3
+                self.pieces[self.layers - 1][0][0].orient = (self.pieces[self.layers - 1][0][0].orient + 2) % 3
+
             # update edge orientation
             for i in range(self.layers):
                 for j in range(self.layers):
                     if isinstance(self.pieces[depth][i][j], Edge):
-                        if depth == 0:
+                        if depth == 0 or depth == self.layers - 1:
                             if self.pieces[depth][i][j].orient == 0:
                                 self.pieces[depth][i][j].orient = 2
 
@@ -436,18 +435,24 @@ class RubiksCube:
         elif face == "B":
             depth = self.layers - depth - 1
 
+            # update corner orientation
             if depth == self.layers - 1:
-                # update corner orientation
                 self.pieces[self.layers - 1][self.layers - 1][self.layers - 1].orient = (self.pieces[self.layers - 1][self.layers - 1][self.layers - 1].orient + 2) % 3
                 self.pieces[self.layers - 1][self.layers - 1][0].orient = (self.pieces[self.layers - 1][self.layers - 1][0].orient + 1) % 3
                 self.pieces[self.layers - 1][0][0].orient = (self.pieces[self.layers - 1][0][0].orient + 2) % 3
                 self.pieces[self.layers - 1][0][self.layers - 1].orient = (self.pieces[self.layers - 1][0][self.layers - 1].orient + 1) % 3
 
+            elif depth == 0:
+                self.pieces[0][self.layers - 1][0].orient = (self.pieces[0][self.layers - 1][0].orient + 2) % 3
+                self.pieces[0][self.layers - 1][self.layers - 1].orient = (self.pieces[0][self.layers - 1][self.layers - 1].orient + 1) % 3
+                self.pieces[0][0][0].orient = (self.pieces[0][0][0].orient + 1) % 3
+                self.pieces[0][0][self.layers - 1].orient = (self.pieces[0][0][self.layers - 1].orient + 2) % 3
+
             # update edge orientation
             for i in range(self.layers):
                 for j in range(self.layers):
                     if isinstance(self.pieces[depth][i][j], Edge):
-                        if depth == self.layers - 1:
+                        if depth == 0 or depth == self.layers - 1:
                             if self.pieces[depth][i][j].orient == 0:
                                 self.pieces[depth][i][j].orient = 2
 
@@ -486,18 +491,24 @@ class RubiksCube:
         elif face == "R":
             depth = self.layers - depth - 1
 
+            # update corner orientation
             if depth == self.layers - 1:
-                # update corner orientation
                 self.pieces[0][self.layers - 1][self.layers - 1].orient = (self.pieces[0][self.layers - 1][self.layers - 1].orient + 2) % 3
                 self.pieces[self.layers - 1][self.layers - 1][self.layers - 1].orient = (self.pieces[self.layers - 1][self.layers - 1][self.layers - 1].orient + 1) % 3
                 self.pieces[self.layers - 1][0][self.layers - 1].orient = (self.pieces[self.layers - 1][0][self.layers - 1].orient + 2) % 3
                 self.pieces[0][0][self.layers - 1].orient = (self.pieces[0][0][self.layers - 1].orient + 1) % 3
 
+            elif depth == 0:
+                self.pieces[self.layers - 1][self.layers - 1][0].orient = (self.pieces[self.layers - 1][self.layers - 1][0].orient + 2) % 3
+                self.pieces[0][self.layers - 1][0].orient = (self.pieces[0][self.layers - 1][0].orient + 1) % 3
+                self.pieces[0][0][0].orient = (self.pieces[0][0][0].orient + 2) % 3
+                self.pieces[self.layers - 1][0][0].orient = (self.pieces[self.layers - 1][0][0].orient + 1) % 3
+
             # update edge orientation
             for i in range(self.layers):
                 for j in range(self.layers):
                     if isinstance(self.pieces[i][j][depth], Edge):
-                        if depth == self.layers - 1:
+                        if depth == 0 or depth == self.layers - 1:
                             if self.pieces[i][j][depth].orient == 0:
                                 self.pieces[i][j][depth].orient = 3
 
@@ -534,18 +545,24 @@ class RubiksCube:
                     self.pieces[j][self.layers - i - 1][depth] = tmp
 
         elif face == "L":
+            # update corner orientation
             if depth == 0:
-                # update corner orientation
                 self.pieces[self.layers - 1][self.layers - 1][0].orient = (self.pieces[self.layers - 1][self.layers - 1][0].orient + 2) % 3
                 self.pieces[0][self.layers - 1][0].orient = (self.pieces[0][self.layers - 1][0].orient + 1) % 3
                 self.pieces[0][0][0].orient = (self.pieces[0][0][0].orient + 2) % 3
                 self.pieces[self.layers - 1][0][0].orient = (self.pieces[self.layers - 1][0][0].orient + 1) % 3
 
+            elif depth == self.layers - 1:
+                self.pieces[0][self.layers - 1][self.layers - 1].orient = (self.pieces[0][self.layers - 1][self.layers - 1].orient + 2) % 3
+                self.pieces[self.layers - 1][self.layers - 1][self.layers - 1].orient = (self.pieces[self.layers - 1][self.layers - 1][self.layers - 1].orient + 1) % 3
+                self.pieces[self.layers - 1][0][self.layers - 1].orient = (self.pieces[self.layers - 1][0][self.layers - 1].orient + 2) % 3
+                self.pieces[0][0][self.layers - 1].orient = (self.pieces[0][0][self.layers - 1].orient + 1) % 3
+
             # update edge orientation
             for i in range(self.layers):
                 for j in range(self.layers):
                     if isinstance(self.pieces[i][j][depth], Edge):
-                        if depth == 0:
+                        if depth == 0 or depth == self.layers - 1:
                             if self.pieces[i][j][depth].orient == 0:
                                 self.pieces[i][j][depth].orient = 3
 
@@ -645,7 +662,8 @@ class RubiksCube:
 
         elif face.endswith("'"):
             # reverse patterns, anti-clockwise instead of clockwise
-            [self.rotate(Move(face[:-1], 1, depth)) for _ in range(3)]
+            opposite_faces = {"F": "B", "B": "F", "R": "L", "L": "R", "U": "D", "D": "U"}
+            self.rotate(Move(opposite_faces[face[:-1]], 1, self.layers - depth - 1))
 
         elif face.endswith("2"):
             # 180 degree turn
