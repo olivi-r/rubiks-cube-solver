@@ -114,12 +114,13 @@ if __name__ == "__main__":
                         global_rotation = rot_y(0.25 * mouse_delta[0]) * global_rotation
 
                     elif dragging_piece:
-                        mouse_delta = pygame.mouse.get_rel()
-                        pieces = [piece for z in cube.tmp_pieces for y in z for piece in y]
-                        x = pieces.index(selected_piece[0])
-                        z = x // cube.layers ** 2
-                        y = x // cube.layers
-                        x %= cube.layers
+                        if not (cube.moving or cube.moving_threads):
+                            mouse_delta = pygame.mouse.get_rel()
+                            pieces = [piece for z in cube.tmp_pieces for y in z for piece in y]
+                            x = pieces.index(selected_piece[0])
+                            z = x // cube.layers ** 2
+                            y = x // cube.layers
+                            x %= cube.layers
 
                 if event.type == pygame.MOUSEBUTTONUP:
                     dragging = False
@@ -169,9 +170,10 @@ if __name__ == "__main__":
                         overall_avg_depth = sum(depths) / len(depths)
                         to_draw.append([overall_avg_depth, new_poly, piece, face])
 
-        if not dragging_piece:
+        if not dragging_piece or cube.moving:
             piece_selected = False
             selected_piece = None
+            dragging_piece = False
 
         bubble_sort(to_draw)
         for poly in reversed(to_draw):
