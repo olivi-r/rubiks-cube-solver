@@ -28,7 +28,8 @@ def sign(p1: list, p2: list, p3: list) -> float:
 
 dimensions = [800, 450]
 
-display_mode = True
+display_mode = False
+wireframe = False
 
 if __name__ == "__main__":
     pygame.font.init()
@@ -44,7 +45,7 @@ if __name__ == "__main__":
 
     cam = Camera(Vector3(0, 0, -30), Vector3(0, 0, 0), 0.1)
 
-    cube = RubiksCube(12, 2, 100, display_mode)
+    cube = RubiksCube(12, 3, 250, display_mode)
 
     display_angle = rot_z(45) * rot_x(45)
     global_rotation = Matrix3x3([[1, 0, 0], [0, 1, 0], [0, 0, 1]])
@@ -53,7 +54,9 @@ if __name__ == "__main__":
         global_rotation = display_angle * global_rotation
 
     dragging = False
+    dragging_piece = False
     piece_selected = False
+    selected_piece = None
 
     fps_counter = pygame.time.Clock()
 
@@ -94,8 +97,13 @@ if __name__ == "__main__":
 
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     if event.button == 1:
-                        if not dragging and not piece_selected:
-                            dragging = True
+                        if not dragging:
+                            if piece_selected:
+                                dragging_piece = True
+
+                            else:
+                                dragging = True
+
                             pygame.mouse.get_rel()
 
                 if event.type == pygame.MOUSEMOTION:
@@ -105,8 +113,17 @@ if __name__ == "__main__":
                         global_rotation = rot_x(0.25 * mouse_delta[1]) * global_rotation
                         global_rotation = rot_y(0.25 * mouse_delta[0]) * global_rotation
 
+                    elif dragging_piece:
+                        mouse_delta = pygame.mouse.get_rel()
+                        pieces = [piece for z in cube.tmp_pieces for y in z for piece in y]
+                        x = pieces.index(selected_piece[0])
+                        z = x // cube.layers ** 2
+                        y = x // cube.layers
+                        x %= cube.layers
+
                 if event.type == pygame.MOUSEBUTTONUP:
                     dragging = False
+                    dragging_piece = False
 
         display.fill((255, 255, 255))
 
@@ -119,12 +136,12 @@ if __name__ == "__main__":
 
                     tmp_piece = piece.copy()
                     tmp_piece.rotate(global_rotation)
-                    for poly in tmp_piece.polys:
+                    for face, poly in enumerate(tmp_piece.polys):
                         backface = False
                         if (poly.triangles[0].p1 - cam.pos).dot(poly.normal) > 0:
                             # remove backfaces when cube isn't moving to maximise frame rate
                             # backfaces are otherwise coloured in black
-                            if cube.moving:
+                            if cube.moving or wireframe:
                                 backface = True
 
                             else:
@@ -150,13 +167,15 @@ if __name__ == "__main__":
                             depths.append(avg_depth)
 
                         overall_avg_depth = sum(depths) / len(depths)
-                        to_draw.append([overall_avg_depth, new_poly])
+                        to_draw.append([overall_avg_depth, new_poly, piece, face])
 
-        piece_selected = False
+        if not dragging_piece:
+            piece_selected = False
+            selected_piece = None
+
         bubble_sort(to_draw)
         for poly in reversed(to_draw):
             # project 3D camera space points to 2D plane
-
 
             cached_points = {}
 
@@ -187,10 +206,16 @@ if __name__ == "__main__":
                     neg = any(map(lambda x: x < 0, deltas))
                     pos = any(map(lambda x: x > 0, deltas))
                     if not selected:
-                        selected = not (neg and pos)
+                        if dragging_piece:
+                            if poly[2] == selected_piece[0] and poly[3] == selected_piece[1]:
+                                selected = True
+
+                        else:
+                            selected = not (neg and pos)
 
                     if not piece_selected and selected:
                         piece_selected = True
+                        selected_piece = poly[2:]
 
             for tri in poly[1].triangles:
                 try:
@@ -205,13 +230,13 @@ if __name__ == "__main__":
                     )
 
                 # draw shapes
-                if not selected:
-                    pygame.draw.polygon(display, tri.col, points)
+                if not selected or display_mode:
+                    pygame.draw.polygon(display, tri.col, points, width=10 if wireframe else 0)
 
                 else:
-                    pygame.draw.polygon(display, cube.dimmed[tri.col], points)
+                    pygame.draw.polygon(display, cube.dimmed[tri.col], points, width=10 if wireframe else 0)
 
-                pygame.draw.lines(display, "#000000", False, points, width=5)
+                pygame.draw.lines(display, "#000000", wireframe, points, width=5)
 
         # display fps in top left
         fps_counter.tick()
