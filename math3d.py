@@ -42,6 +42,35 @@ class Matrix3x3:
         return NotImplemented
 
 
+class Vector2:
+    def __init__(self, i: float=0, j: float=0):
+        try:
+            assert isinstance(i, (int, float))
+            assert isinstance(j, (int, float))
+            self.i = i
+            self.j = j
+
+        except AssertionError:
+            self.i = 0
+            self.j = 0
+
+    @property
+    def magnitude(self):
+        return math.sqrt(self.i **2 + self.j ** 2)
+
+    def normalize(self):
+        m = self.magnitude
+        self.i /= m
+        self.j /= m
+
+    def dot(self, other: object) -> float:
+        try:
+            return self.i * other.i + self.j * other.j
+
+        except AttributeError:
+            return 0
+
+
 class Vector3(Matrix3x3):
     def __init__(self, i: float=0, j: float=0, k: float=0):
         # Vectors are represented as matrices to allow easy matrix - vector multiplication
@@ -173,10 +202,10 @@ class Camera:
         new *= point - self.pos
         return new
 
-    def project2d(self, point: Vector3, width: int, height: int) -> tuple:
+    def project2d(self, point: Vector3, width: int, height: int) -> Vector2:
         # convert 3D points to 2D: divide by z, map to screen
         if point.k >= self.near_clip:
-            return (
+            return Vector2(
                 width / 2 + height * point.i / point.k,
                 height - (height / 2 + height * point.j / point.k)
             )

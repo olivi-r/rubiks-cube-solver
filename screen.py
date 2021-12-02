@@ -1,4 +1,4 @@
-from math3d import Camera, Matrix3x3, Polygon, Triangle, Vector3, rot_x, rot_y, rot_z
+from math3d import Camera, Matrix3x3, Polygon, Triangle, Vector2, Vector3, rot_x, rot_y, rot_z
 from cube import RubiksCube
 import os; os.environ["PYGAME_HIDE_SUPPORT_PROMPT"] = "1"
 import pygame
@@ -23,7 +23,7 @@ def bubble_sort(to_sort: list) -> None:
 
 def sign(p1: list, p2: list, p3: list) -> float:
     # https://stackoverflow.com/a/2049593
-    return (p1[0] - p3[0]) * (p2[1] - p3[1]) - (p2[0] - p3[0]) * (p1[1] - p3[1])
+    return (p1.i - p3.i) * (p2.j - p3.j) - (p2.i - p3.i) * (p1.j - p3.j)
 
 
 dimensions = [800, 450]
@@ -115,12 +115,55 @@ if __name__ == "__main__":
 
                     elif dragging_piece:
                         if not (cube.moving or cube.moving_threads):
-                            mouse_delta = pygame.mouse.get_rel()
+                            mouse_delta = Vector2(*pygame.mouse.get_rel())
+                            if mouse_delta.magnitude < 10:
+                                # need sufficient movment to move pieces
+                                continue
+
                             pieces = [piece for z in cube.tmp_pieces for y in z for piece in y]
                             x = pieces.index(selected_piece[0])
                             z = x // cube.layers ** 2
-                            y = x // cube.layers
+                            y = x // cube.layers % cube.layers
                             x %= cube.layers
+
+                            # top left front corner
+                            if x == 0 and z == 0:
+                                if selected_piece[0].orient == 0 and selected_piece[1] == 0 or selected_piece[0].orient == 1 and selected_piece[1] == 2 or selected_piece[0].orient == 2 and selected_piece[1] == 1:
+                                        # top side
+                                        vec_l = cam.world_to_camera(global_rotation * Vector3(0, 0, -1))
+                                        vec_l_p = cam.world_to_camera(global_rotation * Vector3(0, 0, 1))
+                                        vec_f = cam.world_to_camera(global_rotation * Vector3(1, 0, 0))
+                                        vec_f_p = cam.world_to_camera(global_rotation * Vector3(-1, 0, 0))
+
+                                        vec_l = Vector2(vec_l.i, -vec_l.j)
+                                        vec_l_p = Vector2(vec_l_p.i, -vec_l_p.j)
+                                        vec_f = Vector2(vec_f.i, -vec_f.j)
+                                        vec_f_p = Vector2(vec_f_p.i, -vec_f_p.j)
+
+                                        vec_l.normalize()
+                                        vec_l_p.normalize()
+                                        vec_f.normalize()
+                                        vec_f_p.normalize()
+
+                                        # vec = cam.world_to_camera(global_rotation * Vector3(1, 0, 0))
+                                        # vec = Vector2(vec.i, -vec.j)
+                                        # vec.normalize()
+
+                                        l = vec_l.dot(mouse_delta)
+                                        l_p = vec_l_p.dot(mouse_delta)
+                                        f = vec_f.dot(mouse_delta)
+                                        f_p = vec_f_p.dot(mouse_delta)
+                                        if max(l, l_p, f, f_p) == l:
+                                            cube.evaluate("L")
+
+                                        elif max(l_p, f, f_p) == l_p:
+                                            cube.evaluate("L'")
+
+                                        elif max(f, f_p) == f:
+                                            cube.evaluate("F")
+
+                                        else:
+                                            cube.evaluate("F'")
 
                 if event.type == pygame.MOUSEBUTTONUP:
                     dragging = False
@@ -199,7 +242,7 @@ if __name__ == "__main__":
                     cached_points[tri] = points
 
                     # calculate if mouse intersecting triangle
-                    coords = pygame.mouse.get_pos()
+                    coords = Vector2(*pygame.mouse.get_pos())
                     deltas = [
                         sign(coords, points[0], points[1]),
                         sign(coords, points[1], points[2]),
@@ -232,6 +275,7 @@ if __name__ == "__main__":
                     )
 
                 # draw shapes
+                points = [[vec.i, vec.j] for vec in points]
                 if not selected or display_mode:
                     pygame.draw.polygon(display, tri.col, points, width=10 if wireframe else 0)
 
