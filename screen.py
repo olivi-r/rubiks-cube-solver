@@ -26,6 +26,20 @@ def sign(p1: list, p2: list, p3: list) -> float:
     return (p1.i - p3.i) * (p2.j - p3.j) - (p2.i - p3.i) * (p1.j - p3.j)
 
 
+def drag_face(cube: RubiksCube, cam: Camera, mouse_delta: Vector2, vectors: dict) -> None:
+    new_vecs = {}
+    for move, vec in vecs.items():
+        new_vec = cam.world_to_camera(global_rotation * vec)
+        new_vec = Vector2(new_vec.i, -new_vec.j)
+        new_vec.normalize()
+        new_vecs[move] = new_vec.dot(mouse_delta)
+
+    for k, v in new_vecs.items():
+        if max(new_vecs.values()) == v:
+            cube.evaluate(k)
+            return
+
+
 dimensions = [800, 450]
 
 display_mode = False
@@ -138,144 +152,53 @@ if __name__ == "__main__":
                             if x == 0 and y == cube.layers - 1 and z == 0:
                                 if orient_map["top"][selected_piece[0].orient] == selected_piece[1]:
                                     # top side
-                                    vec_l = cam.world_to_camera(global_rotation * Vector3(0, 0, -1))
-                                    vec_l_p = cam.world_to_camera(global_rotation * Vector3(0, 0, 1))
-                                    vec_f = cam.world_to_camera(global_rotation * Vector3(1, 0, 0))
-                                    vec_f_p = cam.world_to_camera(global_rotation * Vector3(-1, 0, 0))
+                                    vecs = {
+                                        "L": Vector3(0, 0, -1),
+                                        "L'": Vector3(0, 0, 1),
+                                        "F": Vector3(1, 0, 0),
+                                        "F'": Vector3(-1, 0, 0)
+                                    }
 
-                                    vec_l = Vector2(vec_l.i, -vec_l.j)
-                                    vec_l_p = Vector2(vec_l_p.i, -vec_l_p.j)
-                                    vec_f = Vector2(vec_f.i, -vec_f.j)
-                                    vec_f_p = Vector2(vec_f_p.i, -vec_f_p.j)
-
-                                    vec_l.normalize()
-                                    vec_l_p.normalize()
-                                    vec_f.normalize()
-                                    vec_f_p.normalize()
-
-                                    l = vec_l.dot(mouse_delta)
-                                    l_p = vec_l_p.dot(mouse_delta)
-                                    f = vec_f.dot(mouse_delta)
-                                    f_p = vec_f_p.dot(mouse_delta)
-                                    if max(l, l_p, f, f_p) == l:
-                                        cube.evaluate("L")
-
-                                    elif max(l_p, f, f_p) == l_p:
-                                        cube.evaluate("L'")
-
-                                    elif max(f, f_p) == f:
-                                        cube.evaluate("F")
-
-                                    else:
-                                        cube.evaluate("F'")
+                                    drag_face(cube, cam, mouse_delta, vecs)
 
                             # top right front corner
                             if x == cube.layers - 1 and y == cube.layers - 1 and z == 0:
                                 if orient_map["top"][selected_piece[0].orient] == selected_piece[1]:
                                     # top side
-                                    vec_r = cam.world_to_camera(global_rotation * Vector3(0, 0, 1))
-                                    vec_r_p = cam.world_to_camera(global_rotation * Vector3(0, 0, -1))
-                                    vec_f = cam.world_to_camera(global_rotation * Vector3(1, 0, 0))
-                                    vec_f_p = cam.world_to_camera(global_rotation * Vector3(-1, 0, 0))
+                                    vecs = {
+                                        "R": Vector3(0, 0, 1),
+                                        "R'": Vector3(0, 0, -1),
+                                        "F": Vector3(1, 0, 0),
+                                        "F'": Vector3(-1, 0, 0)
+                                    }
 
-                                    vec_r = Vector2(vec_r.i, -vec_r.j)
-                                    vec_r_p = Vector2(vec_r_p.i, -vec_r_p.j)
-                                    vec_f = Vector2(vec_f.i, -vec_f.j)
-                                    vec_f_p = Vector2(vec_f_p.i, -vec_f_p.j)
-
-                                    vec_r.normalize()
-                                    vec_r_p.normalize()
-                                    vec_f.normalize()
-                                    vec_f_p.normalize()
-
-                                    r = vec_r.dot(mouse_delta)
-                                    r_p = vec_r_p.dot(mouse_delta)
-                                    f = vec_f.dot(mouse_delta)
-                                    f_p = vec_f_p.dot(mouse_delta)
-
-                                    if max(r, r_p, f, f_p) == r:
-                                        cube.evaluate("R")
-
-                                    elif max(r_p, f, f_p) == r_p:
-                                        cube.evaluate("R'")
-
-                                    elif max(f, f_p) == f:
-                                        cube.evaluate("F")
-
-                                    else:
-                                        cube.evaluate("F'")
+                                    drag_face(cube, cam, mouse_delta, vecs)
 
                             # top left back corner
                             if x == 0 and y == cube.layers - 1 and z == cube.layers - 1:
                                 if orient_map["top"][selected_piece[0].orient] == selected_piece[1]:
                                     # top side
-                                    vec_l = cam.world_to_camera(global_rotation * Vector3(0, 0, -1))
-                                    vec_l_p = cam.world_to_camera(global_rotation * Vector3(0, 0, 1))
-                                    vec_b = cam.world_to_camera(global_rotation * Vector3(-1, 0, 0))
-                                    vec_b_p = cam.world_to_camera(global_rotation * Vector3(1, 0, 0))
+                                    vecs = {
+                                        "L": Vector3(0, 0, -1),
+                                        "L'": Vector3(0, 0, 1),
+                                        "B": Vector3(-1, 0, 0),
+                                        "B'": Vector3(1, 0, 0)
+                                    }
 
-                                    vec_l = Vector2(vec_l.i, -vec_l.j)
-                                    vec_l_p = Vector2(vec_l_p.i, -vec_l_p.j)
-                                    vec_b = Vector2(vec_b.i, -vec_b.j)
-                                    vec_b_p = Vector2(vec_b_p.i, -vec_b_p.j)
-
-                                    vec_l.normalize()
-                                    vec_l_p.normalize()
-                                    vec_b.normalize()
-                                    vec_b_p.normalize()
-
-                                    l = vec_l.dot(mouse_delta)
-                                    l_p = vec_l_p.dot(mouse_delta)
-                                    b = vec_b.dot(mouse_delta)
-                                    b_p = vec_b_p.dot(mouse_delta)
-
-                                    if max(l, l_p, b, b_p) == l:
-                                        cube.evaluate("L")
-
-                                    elif max(l_p, b, b_p) == l_p:
-                                        cube.evaluate("L'")
-
-                                    elif max(b, b_p) == b:
-                                        cube.evaluate("B")
-
-                                    else:
-                                        cube.evaluate("B'")
+                                    drag_face(cube, cam, mouse_delta, vecs)
 
                             # top right back corner
                             if x == cube.layers - 1 and y == cube.layers - 1 and z == cube.layers - 1:
                                 if orient_map["top"][selected_piece[0].orient] == selected_piece[1]:
                                     # top side
-                                    vec_r = cam.world_to_camera(global_rotation * Vector3(0, 0, 1))
-                                    vec_r_p = cam.world_to_camera(global_rotation * Vector3(0, 0, -1))
-                                    vec_b = cam.world_to_camera(global_rotation * Vector3(-1, 0, 0))
-                                    vec_b_p = cam.world_to_camera(global_rotation * Vector3(1, 0, 0))
+                                    vecs = {
+                                        "R": Vector3(0, 0, 1),
+                                        "R'": Vector3(0, 0, -1),
+                                        "B": Vector3(-1, 0, 0),
+                                        "B'": Vector3(1, 0, 0)
+                                    }
 
-                                    vec_r = Vector2(vec_r.i, -vec_r.j)
-                                    vec_r_p = Vector2(vec_r_p.i, -vec_r_p.j)
-                                    vec_b = Vector2(vec_b.i, -vec_b.j)
-                                    vec_b_p = Vector2(vec_b_p.i, -vec_b_p.j)
-
-                                    vec_r.normalize()
-                                    vec_r_p.normalize()
-                                    vec_b.normalize()
-                                    vec_b_p.normalize()
-
-                                    r = vec_r.dot(mouse_delta)
-                                    r_p = vec_r_p.dot(mouse_delta)
-                                    b = vec_b.dot(mouse_delta)
-                                    b_p = vec_b_p.dot(mouse_delta)
-
-                                    if max(r, r_p, b, b_p) == r:
-                                        cube.evaluate("R")
-
-                                    elif max(r_p, b, b_p) == r_p:
-                                        cube.evaluate("R'")
-
-                                    elif max(b, b_p) == b:
-                                        cube.evaluate("B")
-
-                                    else:
-                                        cube.evaluate("B'")
+                                    drag_face(cube, cam, mouse_delta, vecs)
 
                 if event.type == pygame.MOUSEBUTTONUP:
                     dragging = False
