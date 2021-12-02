@@ -127,7 +127,7 @@ if __name__ == "__main__":
                             x %= cube.layers
 
                             # top left front corner
-                            if x == 0 and z == 0:
+                            if x == 0 and y == 0 and z == 0:
                                 if selected_piece[0].orient == 0 and selected_piece[1] == 0 or selected_piece[0].orient == 1 and selected_piece[1] == 2 or selected_piece[0].orient == 2 and selected_piece[1] == 1:
                                         # top side
                                         vec_l = cam.world_to_camera(global_rotation * Vector3(0, 0, -1))
@@ -144,10 +144,6 @@ if __name__ == "__main__":
                                         vec_l_p.normalize()
                                         vec_f.normalize()
                                         vec_f_p.normalize()
-
-                                        # vec = cam.world_to_camera(global_rotation * Vector3(1, 0, 0))
-                                        # vec = Vector2(vec.i, -vec.j)
-                                        # vec.normalize()
 
                                         l = vec_l.dot(mouse_delta)
                                         l_p = vec_l_p.dot(mouse_delta)
