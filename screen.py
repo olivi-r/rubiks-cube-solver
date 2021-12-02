@@ -126,9 +126,17 @@ if __name__ == "__main__":
                             y = x // cube.layers % cube.layers
                             x %= cube.layers
 
+                            orient_map = {
+                                "top": {
+                                    0: 0,
+                                    1: 2,
+                                    2: 1
+                                }
+                            }
+
                             # top left front corner
                             if x == 0 and y == cube.layers - 1 and z == 0:
-                                if selected_piece[0].orient == 0 and selected_piece[1] == 0 or selected_piece[0].orient == 1 and selected_piece[1] == 2 or selected_piece[0].orient == 2 and selected_piece[1] == 1:
+                                if orient_map["top"][selected_piece[0].orient] == selected_piece[1]:
                                     # top side
                                     vec_l = cam.world_to_camera(global_rotation * Vector3(0, 0, -1))
                                     vec_l_p = cam.world_to_camera(global_rotation * Vector3(0, 0, 1))
@@ -163,7 +171,7 @@ if __name__ == "__main__":
 
                             # top right front corner
                             if x == cube.layers - 1 and y == cube.layers - 1 and z == 0:
-                                if selected_piece[0].orient == 0 and selected_piece[1] == 0 or selected_piece[0].orient == 1 and selected_piece[1] == 2 or selected_piece[0].orient == 2 and selected_piece[1] == 1:
+                                if orient_map["top"][selected_piece[0].orient] == selected_piece[1]:
                                     # top side
                                     vec_r = cam.world_to_camera(global_rotation * Vector3(0, 0, 1))
                                     vec_r_p = cam.world_to_camera(global_rotation * Vector3(0, 0, -1))
@@ -199,7 +207,7 @@ if __name__ == "__main__":
 
                             # top left back corner
                             if x == 0 and y == cube.layers - 1 and z == cube.layers - 1:
-                                if selected_piece[0].orient == 0 and selected_piece[1] == 0 or selected_piece[0].orient == 1 and selected_piece[1] == 2 or selected_piece[0].orient == 2 and selected_piece[1] == 1:
+                                if orient_map["top"][selected_piece[0].orient] == selected_piece[1]:
                                     # top side
                                     vec_l = cam.world_to_camera(global_rotation * Vector3(0, 0, -1))
                                     vec_l_p = cam.world_to_camera(global_rotation * Vector3(0, 0, 1))
@@ -235,7 +243,7 @@ if __name__ == "__main__":
 
                             # top right back corner
                             if x == cube.layers - 1 and y == cube.layers - 1 and z == cube.layers - 1:
-                                if selected_piece[0].orient == 0 and selected_piece[1] == 0 or selected_piece[0].orient == 1 and selected_piece[1] == 2 or selected_piece[0].orient == 2 and selected_piece[1] == 1:
+                                if orient_map["top"][selected_piece[0].orient] == selected_piece[1]:
                                     # top side
                                     vec_r = cam.world_to_camera(global_rotation * Vector3(0, 0, 1))
                                     vec_r_p = cam.world_to_camera(global_rotation * Vector3(0, 0, -1))
