@@ -145,6 +145,11 @@ if __name__ == "__main__":
                                     0: 0,
                                     1: 2,
                                     2: 1
+                                },
+                                "front": {
+                                    0: 1,
+                                    1: 0,
+                                    2: 2
                                 }
                             }
 
@@ -157,6 +162,17 @@ if __name__ == "__main__":
                                         "L'": Vector3(0, 0, 1),
                                         "F": Vector3(1, 0, 0),
                                         "F'": Vector3(-1, 0, 0)
+                                    }
+
+                                    drag_face(cube, cam, mouse_delta, vecs)
+
+                                elif orient_map["front"][selected_piece[0].orient] == selected_piece[1]:
+                                    # front side
+                                    vecs = {
+                                        "U": Vector3(0, 0, 1),
+                                        "U'": Vector3(0, 0, -1),
+                                        "F": Vector3(0, 1, 0),
+                                        "F'": Vector3(0, -1, 0)
                                     }
 
                                     drag_face(cube, cam, mouse_delta, vecs)
@@ -174,6 +190,17 @@ if __name__ == "__main__":
 
                                     drag_face(cube, cam, mouse_delta, vecs)
 
+                                elif orient_map["front"][selected_piece[0].orient] == selected_piece[1]:
+                                    # front side
+                                    vecs = {
+                                        "U": Vector3(0, 0, -1),
+                                        "U'": Vector3(0, 0, 1),
+                                        "R": Vector3(0, 1, 0),
+                                        "R'": Vector3(0, -1, 0)
+                                    }
+
+                                    drag_face(cube, cam, mouse_delta, vecs)
+
                             # top left back corner
                             if x == 0 and y == cube.layers - 1 and z == cube.layers - 1:
                                 if orient_map["top"][selected_piece[0].orient] == selected_piece[1]:
@@ -187,6 +214,17 @@ if __name__ == "__main__":
 
                                     drag_face(cube, cam, mouse_delta, vecs)
 
+                                elif orient_map["front"][selected_piece[0].orient] == selected_piece[1]:
+                                    # front side
+                                    vecs = {
+                                        "U": Vector3(1, 0, 0),
+                                        "U'": Vector3(-1, 0, 0),
+                                        "L": Vector3(0, 1, 0),
+                                        "L'": Vector3(0, -1, 0)
+                                    }
+
+                                    drag_face(cube, cam, mouse_delta, vecs)
+
                             # top right back corner
                             if x == cube.layers - 1 and y == cube.layers - 1 and z == cube.layers - 1:
                                 if orient_map["top"][selected_piece[0].orient] == selected_piece[1]:
@@ -196,6 +234,17 @@ if __name__ == "__main__":
                                         "R'": Vector3(0, 0, -1),
                                         "B": Vector3(-1, 0, 0),
                                         "B'": Vector3(1, 0, 0)
+                                    }
+
+                                    drag_face(cube, cam, mouse_delta, vecs)
+
+                                elif orient_map["front"][selected_piece[0].orient] == selected_piece[1]:
+                                    # front side
+                                    vecs = {
+                                        "U": Vector3(0, 0, -1),
+                                        "U'": Vector3(0, 0, 1),
+                                        "B": Vector3(0, 1, 0),
+                                        "B'": Vector3(0, -1, 0)
                                     }
 
                                     drag_face(cube, cam, mouse_delta, vecs)
