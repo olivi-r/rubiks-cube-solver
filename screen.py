@@ -127,39 +127,147 @@ if __name__ == "__main__":
                             x %= cube.layers
 
                             # top left front corner
-                            if x == 0 and y == 0 and z == 0:
+                            if x == 0 and y == cube.layers - 1 and z == 0:
                                 if selected_piece[0].orient == 0 and selected_piece[1] == 0 or selected_piece[0].orient == 1 and selected_piece[1] == 2 or selected_piece[0].orient == 2 and selected_piece[1] == 1:
-                                        # top side
-                                        vec_l = cam.world_to_camera(global_rotation * Vector3(0, 0, -1))
-                                        vec_l_p = cam.world_to_camera(global_rotation * Vector3(0, 0, 1))
-                                        vec_f = cam.world_to_camera(global_rotation * Vector3(1, 0, 0))
-                                        vec_f_p = cam.world_to_camera(global_rotation * Vector3(-1, 0, 0))
+                                    # top side
+                                    vec_l = cam.world_to_camera(global_rotation * Vector3(0, 0, -1))
+                                    vec_l_p = cam.world_to_camera(global_rotation * Vector3(0, 0, 1))
+                                    vec_f = cam.world_to_camera(global_rotation * Vector3(1, 0, 0))
+                                    vec_f_p = cam.world_to_camera(global_rotation * Vector3(-1, 0, 0))
 
-                                        vec_l = Vector2(vec_l.i, -vec_l.j)
-                                        vec_l_p = Vector2(vec_l_p.i, -vec_l_p.j)
-                                        vec_f = Vector2(vec_f.i, -vec_f.j)
-                                        vec_f_p = Vector2(vec_f_p.i, -vec_f_p.j)
+                                    vec_l = Vector2(vec_l.i, -vec_l.j)
+                                    vec_l_p = Vector2(vec_l_p.i, -vec_l_p.j)
+                                    vec_f = Vector2(vec_f.i, -vec_f.j)
+                                    vec_f_p = Vector2(vec_f_p.i, -vec_f_p.j)
 
-                                        vec_l.normalize()
-                                        vec_l_p.normalize()
-                                        vec_f.normalize()
-                                        vec_f_p.normalize()
+                                    vec_l.normalize()
+                                    vec_l_p.normalize()
+                                    vec_f.normalize()
+                                    vec_f_p.normalize()
 
-                                        l = vec_l.dot(mouse_delta)
-                                        l_p = vec_l_p.dot(mouse_delta)
-                                        f = vec_f.dot(mouse_delta)
-                                        f_p = vec_f_p.dot(mouse_delta)
-                                        if max(l, l_p, f, f_p) == l:
-                                            cube.evaluate("L")
+                                    l = vec_l.dot(mouse_delta)
+                                    l_p = vec_l_p.dot(mouse_delta)
+                                    f = vec_f.dot(mouse_delta)
+                                    f_p = vec_f_p.dot(mouse_delta)
+                                    if max(l, l_p, f, f_p) == l:
+                                        cube.evaluate("L")
 
-                                        elif max(l_p, f, f_p) == l_p:
-                                            cube.evaluate("L'")
+                                    elif max(l_p, f, f_p) == l_p:
+                                        cube.evaluate("L'")
 
-                                        elif max(f, f_p) == f:
-                                            cube.evaluate("F")
+                                    elif max(f, f_p) == f:
+                                        cube.evaluate("F")
 
-                                        else:
-                                            cube.evaluate("F'")
+                                    else:
+                                        cube.evaluate("F'")
+
+                            # top right front corner
+                            if x == cube.layers - 1 and y == cube.layers - 1 and z == 0:
+                                if selected_piece[0].orient == 0 and selected_piece[1] == 0 or selected_piece[0].orient == 1 and selected_piece[1] == 2 or selected_piece[0].orient == 2 and selected_piece[1] == 1:
+                                    # top side
+                                    vec_r = cam.world_to_camera(global_rotation * Vector3(0, 0, 1))
+                                    vec_r_p = cam.world_to_camera(global_rotation * Vector3(0, 0, -1))
+                                    vec_f = cam.world_to_camera(global_rotation * Vector3(1, 0, 0))
+                                    vec_f_p = cam.world_to_camera(global_rotation * Vector3(-1, 0, 0))
+
+                                    vec_r = Vector2(vec_r.i, -vec_r.j)
+                                    vec_r_p = Vector2(vec_r_p.i, -vec_r_p.j)
+                                    vec_f = Vector2(vec_f.i, -vec_f.j)
+                                    vec_f_p = Vector2(vec_f_p.i, -vec_f_p.j)
+
+                                    vec_r.normalize()
+                                    vec_r_p.normalize()
+                                    vec_f.normalize()
+                                    vec_f_p.normalize()
+
+                                    r = vec_r.dot(mouse_delta)
+                                    r_p = vec_r_p.dot(mouse_delta)
+                                    f = vec_f.dot(mouse_delta)
+                                    f_p = vec_f_p.dot(mouse_delta)
+
+                                    if max(r, r_p, f, f_p) == r:
+                                        cube.evaluate("R")
+
+                                    elif max(r_p, f, f_p) == r_p:
+                                        cube.evaluate("R'")
+
+                                    elif max(f, f_p) == f:
+                                        cube.evaluate("F")
+
+                                    else:
+                                        cube.evaluate("F'")
+
+                            # top left back corner
+                            if x == 0 and y == cube.layers - 1 and z == cube.layers - 1:
+                                if selected_piece[0].orient == 0 and selected_piece[1] == 0 or selected_piece[0].orient == 1 and selected_piece[1] == 2 or selected_piece[0].orient == 2 and selected_piece[1] == 1:
+                                    # top side
+                                    vec_l = cam.world_to_camera(global_rotation * Vector3(0, 0, -1))
+                                    vec_l_p = cam.world_to_camera(global_rotation * Vector3(0, 0, 1))
+                                    vec_b = cam.world_to_camera(global_rotation * Vector3(-1, 0, 0))
+                                    vec_b_p = cam.world_to_camera(global_rotation * Vector3(1, 0, 0))
+
+                                    vec_l = Vector2(vec_l.i, -vec_l.j)
+                                    vec_l_p = Vector2(vec_l_p.i, -vec_l_p.j)
+                                    vec_b = Vector2(vec_b.i, -vec_b.j)
+                                    vec_b_p = Vector2(vec_b_p.i, -vec_b_p.j)
+
+                                    vec_l.normalize()
+                                    vec_l_p.normalize()
+                                    vec_b.normalize()
+                                    vec_b_p.normalize()
+
+                                    l = vec_l.dot(mouse_delta)
+                                    l_p = vec_l_p.dot(mouse_delta)
+                                    b = vec_b.dot(mouse_delta)
+                                    b_p = vec_b_p.dot(mouse_delta)
+
+                                    if max(l, l_p, b, b_p) == l:
+                                        cube.evaluate("L")
+
+                                    elif max(l_p, b, b_p) == l_p:
+                                        cube.evaluate("L'")
+
+                                    elif max(b, b_p) == b:
+                                        cube.evaluate("B")
+
+                                    else:
+                                        cube.evaluate("B'")
+
+                            # top right back corner
+                            if x == cube.layers - 1 and y == cube.layers - 1 and z == cube.layers - 1:
+                                if selected_piece[0].orient == 0 and selected_piece[1] == 0 or selected_piece[0].orient == 1 and selected_piece[1] == 2 or selected_piece[0].orient == 2 and selected_piece[1] == 1:
+                                    # top side
+                                    vec_r = cam.world_to_camera(global_rotation * Vector3(0, 0, 1))
+                                    vec_r_p = cam.world_to_camera(global_rotation * Vector3(0, 0, -1))
+                                    vec_b = cam.world_to_camera(global_rotation * Vector3(-1, 0, 0))
+                                    vec_b_p = cam.world_to_camera(global_rotation * Vector3(1, 0, 0))
+
+                                    vec_r = Vector2(vec_r.i, -vec_r.j)
+                                    vec_r_p = Vector2(vec_r_p.i, -vec_r_p.j)
+                                    vec_b = Vector2(vec_b.i, -vec_b.j)
+                                    vec_b_p = Vector2(vec_b_p.i, -vec_b_p.j)
+
+                                    vec_r.normalize()
+                                    vec_r_p.normalize()
+                                    vec_b.normalize()
+                                    vec_b_p.normalize()
+
+                                    r = vec_r.dot(mouse_delta)
+                                    r_p = vec_r_p.dot(mouse_delta)
+                                    b = vec_b.dot(mouse_delta)
+                                    b_p = vec_b_p.dot(mouse_delta)
+
+                                    if max(r, r_p, b, b_p) == r:
+                                        cube.evaluate("R")
+
+                                    elif max(r_p, b, b_p) == r_p:
+                                        cube.evaluate("R'")
+
+                                    elif max(b, b_p) == b:
+                                        cube.evaluate("B")
+
+                                    else:
+                                        cube.evaluate("B'")
 
                 if event.type == pygame.MOUSEBUTTONUP:
                     dragging = False
