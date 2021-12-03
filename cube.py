@@ -1589,14 +1589,19 @@ class RubiksCube:
         str_moves = sequence.upper().split(" ")
         moves = []
         for move in str_moves:
+            depth = 0
+            if "." in move:
+                move, depth = move.split(".")
+                depth = int(depth)
+
             if move in ["F", "B", "R", "L", "U", "D"]:
-                moves.append(Move(move))
+                moves.append(Move(move, 1, depth))
 
             elif move.endswith("'") and move[:-1] in ["F", "B", "R", "L", "U", "D"]:
-                moves.append(Move(move[:-1], 3))
+                moves.append(Move(move[:-1], 3, depth))
 
             elif move.endswith("2") and move[:-1] in ["F", "B", "R", "L", "U", "D"]:
-                moves.append(Move(move[:-1], 2))
+                moves.append(Move(move[:-1], 2, depth))
 
             # quietly discard invalid moves
 
