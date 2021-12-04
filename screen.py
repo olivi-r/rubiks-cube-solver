@@ -1,5 +1,5 @@
 from math3d import Camera, Matrix3x3, Polygon, Triangle, Vector2, Vector3, rot_x, rot_y, rot_z
-from cube import Center, Corner, RubiksCube
+from cube import Center, Corner, Edge, RubiksCube
 import os; os.environ["PYGAME_HIDE_SUPPORT_PROMPT"] = "1"
 import pygame
 import tkinter
@@ -515,6 +515,317 @@ if __name__ == "__main__":
                                 }
 
                                 drag_face(cube, cam, mouse_delta, vecs)
+
+                        elif isinstance(selected_piece[0], Edge):
+                            orient_map = {
+                                "top": {
+                                    0: 0,
+                                    1: 1,
+                                    2: 0,
+                                    3: 1
+                                },
+                                "front": {
+                                    0: 1,
+                                    1: 0,
+                                    2: 1,
+                                    3: 0
+                                }
+                            }
+                            if x == 0:
+                                # left side
+                                if y == 0:
+                                    # bottom left
+                                    if orient_map["top"][selected_piece[0].orient] == selected_piece[1]:
+                                        # top side
+                                        vecs = {
+                                            "L": Vector3(0, 0, 1),
+                                            "L'": Vector3(0, 0, -1),
+                                            f"F.{z}": Vector3(-1, 0, 0),
+                                            f"F'.{z}": Vector3(1, 0, 0)
+                                        }
+
+                                        drag_face(cube, cam, mouse_delta, vecs)
+
+                                    elif orient_map["front"][selected_piece[0].orient] == selected_piece[1]:
+                                        # front side
+                                        vecs = {
+                                            "D": Vector3(0, 0, -1),
+                                            "D'": Vector3(0, 0, 1),
+                                            f"F.{z}": Vector3(0, 1, 0),
+                                            f"F'.{z}": Vector3(0, -1, 0)
+                                        }
+
+                                        drag_face(cube, cam, mouse_delta, vecs)
+
+                                elif y == cube.layers - 1:
+                                    # top left
+                                    if orient_map["top"][selected_piece[0].orient] == selected_piece[1]:
+                                        # top side
+                                        vecs = {
+                                            "L": Vector3(0, 0, -1),
+                                            "L'": Vector3(0, 0, 1),
+                                            f"F.{z}": Vector3(1, 0, 0),
+                                            f"F'.{z}": Vector3(-1, 0, 0)
+                                        }
+
+                                        drag_face(cube, cam, mouse_delta, vecs)
+
+                                    elif orient_map["front"][selected_piece[0].orient] == selected_piece[1]:
+                                        # front side
+                                        vecs = {
+                                            "U": Vector3(0, 0, 1),
+                                            "U'": Vector3(0, 0, -1),
+                                            f"F.{z}": Vector3(0, 1, 0),
+                                            f"F'.{z}": Vector3(0, -1, 0)
+                                        }
+
+                                        drag_face(cube, cam, mouse_delta, vecs)
+
+                                elif z == 0:
+                                    # front left
+                                    if orient_map["top"][selected_piece[0].orient] == selected_piece[1]:
+                                        # top side
+                                        vecs = {
+                                            "F": Vector3(0, 1, 0),
+                                            "F'": Vector3(0, -1, 0),
+                                            f"D.{y}": Vector3(0, 0, -1),
+                                            f"D'.{y}": Vector3(0, 0, 1)
+                                        }
+
+                                        drag_face(cube, cam, mouse_delta, vecs)
+
+                                    elif orient_map["front"][selected_piece[0].orient] == selected_piece[1]:
+                                        # front side
+                                        vecs = {
+                                            "L": Vector3(0, -1, 0),
+                                            "L'": Vector3(0, 1, 0),
+                                            f"D.{y}": Vector3(1, 0, 0),
+                                            f"D'.{y}": Vector3(-1, 0, 0)
+                                        }
+
+                                        drag_face(cube, cam, mouse_delta, vecs)
+
+                                elif z == cube.layers - 1:
+                                    # back left
+                                    if orient_map["top"][selected_piece[0].orient] == selected_piece[1]:
+                                        # top side
+                                        vecs = {
+                                            "B": Vector3(0, -1, 0),
+                                            "B'": Vector3(0, 1, 0),
+                                            f"D.{y}": Vector3(0, 0, -1),
+                                            f"D'.{y}": Vector3(0, 0, 1)
+                                        }
+
+                                        drag_face(cube, cam, mouse_delta, vecs)
+
+                                    elif orient_map["front"][selected_piece[0].orient] == selected_piece[1]:
+                                        # front side
+                                        vecs = {
+                                            "L": Vector3(0, 1, 0),
+                                            "L'": Vector3(0, -1, 0),
+                                            f"D.{y}": Vector3(-1, 0, 0),
+                                            f"D'.{y}": Vector3(1, 0, 0)
+                                        }
+
+                                        drag_face(cube, cam, mouse_delta, vecs)
+
+                            elif x == cube.layers - 1:
+                                # right side
+                                if y == 0:
+                                    # bottom right
+                                    if orient_map["top"][selected_piece[0].orient] == selected_piece[1]:
+                                        # top side
+                                        vecs = {
+                                            "R": Vector3(0, 0, -1),
+                                            "R'": Vector3(0, 0, 1),
+                                            f"F.{z}": Vector3(-1, 0, 0),
+                                            f"F'.{z}": Vector3(1, 0, 0)
+                                        }
+
+                                        drag_face(cube, cam, mouse_delta, vecs)
+
+                                    elif orient_map["front"][selected_piece[0].orient] == selected_piece[1]:
+                                        # front side
+                                        vecs = {
+                                            "D": Vector3(0, 0, 1),
+                                            "D'": Vector3(0, 0, -1),
+                                            f"F.{z}": Vector3(0, -1, 0),
+                                            f"F'.{z}": Vector3(0, 1, 0)
+                                        }
+
+                                        drag_face(cube, cam, mouse_delta, vecs)
+
+                                elif y == cube.layers - 1:
+                                    # top right
+                                    if orient_map["top"][selected_piece[0].orient] == selected_piece[1]:
+                                        # top side
+                                        vecs = {
+                                            "R": Vector3(0, 0, 1),
+                                            "R'": Vector3(0, 0, -1),
+                                            f"F.{z}": Vector3(1, 0, 0),
+                                            f"F'.{z}": Vector3(-1, 0, 0)
+                                        }
+
+                                        drag_face(cube, cam, mouse_delta, vecs)
+
+                                    elif orient_map["front"][selected_piece[0].orient] == selected_piece[1]:
+                                        # front side
+                                        vecs = {
+                                            "U": Vector3(0, 0, -1),
+                                            "U'": Vector3(0, 0, 1),
+                                            f"F.{z}": Vector3(0, -1, 0),
+                                            f"F'.{z}": Vector3(0, 1, 0)
+                                        }
+
+                                        drag_face(cube, cam, mouse_delta, vecs)
+
+                                elif z == 0:
+                                    # front right
+                                    if orient_map["top"][selected_piece[0].orient] == selected_piece[1]:
+                                        # top side
+                                        vecs = {
+                                            "F": Vector3(0, -1, 0),
+                                            "F'": Vector3(0, 1, 0),
+                                            f"D.{y}": Vector3(0, 0, 1),
+                                            f"D'.{y}": Vector3(0, 0, -1)
+                                        }
+
+                                        drag_face(cube, cam, mouse_delta, vecs)
+
+                                    elif orient_map["front"][selected_piece[0].orient] == selected_piece[1]:
+                                        # front side
+                                        vecs = {
+                                            "R": Vector3(0, 1, 0),
+                                            "R'": Vector3(0, -1, 0),
+                                            f"D.{y}": Vector3(1, 0, 0),
+                                            f"D'.{y}": Vector3(-1, 0, 0)
+                                        }
+
+                                        drag_face(cube, cam, mouse_delta, vecs)
+
+                                elif z == cube.layers - 1:
+                                    # back right
+                                    if orient_map["top"][selected_piece[0].orient] == selected_piece[1]:
+                                        # top side
+                                        vecs = {
+                                            "B": Vector3(0, 1, 0),
+                                            "B'": Vector3(0, -1, 0),
+                                            f"D.{y}": Vector3(0, 0, 1),
+                                            f"D'.{y}": Vector3(0, 0, -1)
+                                        }
+
+                                        drag_face(cube, cam, mouse_delta, vecs)
+
+                                    elif orient_map["front"][selected_piece[0].orient] == selected_piece[1]:
+                                        # front side
+                                        vecs = {
+                                            "R": Vector3(0, -1, 0),
+                                            "R'": Vector3(0, 1, 0),
+                                            f"D.{y}": Vector3(-1, 0, 0),
+                                            f"D'.{y}": Vector3(1, 0, 0)
+                                        }
+
+                                        drag_face(cube, cam, mouse_delta, vecs)
+
+                            elif y == 0:
+                                # bottom side
+                                if z == 0:
+                                    # bottom front
+                                    if orient_map["top"][selected_piece[0].orient] == selected_piece[1]:
+                                        # top side
+                                        vecs = {
+                                            "F": Vector3(-1, 0, 0),
+                                            "F'": Vector3(1, 0, 0),
+                                            f"L.{x}": Vector3(0, 0, 1),
+                                            f"L'.{x}": Vector3(0, 0, -1)
+                                        }
+
+                                        drag_face(cube, cam, mouse_delta, vecs)
+
+                                    elif orient_map["front"][selected_piece[0].orient] == selected_piece[1]:
+                                        # front side
+                                        vecs = {
+                                            "D": Vector3(1, 0, 0),
+                                            "D'": Vector3(-1, 0, 0),
+                                            f"L.{x}": Vector3(0, -1, 0),
+                                            f"L'.{x}": Vector3(0, 1, 0)
+                                        }
+
+                                        drag_face(cube, cam, mouse_delta, vecs)
+
+                                elif z == cube.layers - 1:
+                                    # bottom back
+                                    if orient_map["top"][selected_piece[0].orient] == selected_piece[1]:
+                                        # top side
+                                        vecs = {
+                                            "B": Vector3(1, 0, 0),
+                                            "B'": Vector3(-1, 0, 0),
+                                            f"L.{x}": Vector3(0, 0, 1),
+                                            f"L'.{x}": Vector3(0, 0, -1)
+                                        }
+
+                                        drag_face(cube, cam, mouse_delta, vecs)
+
+                                    elif orient_map["front"][selected_piece[0].orient] == selected_piece[1]:
+                                        # front side
+                                        vecs = {
+                                            "D": Vector3(-1, 0, 0),
+                                            "D'": Vector3(1, 0, 0),
+                                            f"L.{x}": Vector3(0, 1, 0),
+                                            f"L'.{x}": Vector3(0, -1, 0)
+                                        }
+
+                                        drag_face(cube, cam, mouse_delta, vecs)
+
+                            elif y == cube.layers - 1:
+                                # top side
+                                if z == 0:
+                                    # top front
+                                    if orient_map["top"][selected_piece[0].orient] == selected_piece[1]:
+                                        # top side
+                                        vecs = {
+                                            "F": Vector3(1, 0, 0),
+                                            "F'": Vector3(-1, 0, 0),
+                                            f"L.{x}": Vector3(0, 0, -1),
+                                            f"L'.{x}": Vector3(0, 0, 1)
+                                        }
+
+                                        drag_face(cube, cam, mouse_delta, vecs)
+
+                                    elif orient_map["front"][selected_piece[0].orient] == selected_piece[1]:
+                                        # front side
+                                        vecs = {
+                                            "U": Vector3(-1, 0, 0),
+                                            "U'": Vector3(1, 0, 0),
+                                            f"L.{x}": Vector3(0, -1, 0),
+                                            f"L'.{x}": Vector3(0, 1, 0)
+                                        }
+
+                                        drag_face(cube, cam, mouse_delta, vecs)
+
+                                elif z == cube.layers - 1:
+                                    # top back
+                                    if orient_map["top"][selected_piece[0].orient] == selected_piece[1]:
+                                        # top side
+                                        vecs = {
+                                            "B": Vector3(-1, 0, 0),
+                                            "B'": Vector3(1, 0, 0),
+                                            f"L.{x}": Vector3(0, 0, -1),
+                                            f"L'.{x}": Vector3(0, 0, 1)
+                                        }
+
+                                        drag_face(cube, cam, mouse_delta, vecs)
+
+                                    elif orient_map["front"][selected_piece[0].orient] == selected_piece[1]:
+                                        # front side
+                                        vecs = {
+                                            "U": Vector3(1, 0, 0),
+                                            "U'": Vector3(-1, 0, 0),
+                                            f"L.{x}": Vector3(0, 1, 0),
+                                            f"L'.{x}": Vector3(0, -1, 0)
+                                        }
+
+                                        drag_face(cube, cam, mouse_delta, vecs)
 
         display.fill((255, 255, 255))
 
