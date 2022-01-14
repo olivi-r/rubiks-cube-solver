@@ -4,10 +4,6 @@ import random, re, threading, time
 hex_col = re.compile(r"#[\dA-Za-z]{6}")
 
 
-def rotate_2darray(arr):
-    return list(map(list, zip(*arr[::-1])))
-
-
 class Move:
     def __init__(self, face: str, turns: int=1, depth: int=0):
         self.face = face
@@ -15,7 +11,29 @@ class Move:
         self.depth = depth
 
     def __repr__(self):
-        return self.face + str(self.turns) + (str(self.depth) if self.depth else "")
+        return self.face + ("'" if self.turns == 3 else ("2" if self.turns == 2 else "")) + ("." + str(self.depth) if self.depth else "")
+
+    @property
+    def opposite(self):
+        return self.__class__(self.face, 4 - self.turns, self.depth)
+
+    @classmethod
+    def from_str(cls, move: str):
+        if "." in move:
+            move, depth = move.split(".")
+            depth = int(depth)
+
+        else:
+            depth = 0
+
+        if move in ["F", "B", "U", "D", "R", "L"]:
+            return cls(move, 1, depth)
+
+        elif move.endswith("'"):
+            return cls(move[:-1], 3, depth)
+
+        elif move.endswith("2"):
+            return cls(move[:-1], 2, depth)
 
 
 class Center(Mesh):
@@ -173,7 +191,8 @@ class RubiksCube:
         layers = int(layers)
         self.layers = layers
 
-        self.moves = {"scramble": [], "solve": []}
+        self.history = [None]
+        self.history_index = 0
 
         try:
             assert layers > 1
@@ -363,17 +382,24 @@ class RubiksCube:
         self.moving = False
         threading.Thread(target=self.handle_movement).start()
         self.duration = turn_duration
+        self.opposite_faces = {"F": "B", "B": "F", "R": "L", "L": "R", "U": "D", "D": "U"}
 
     @property
-    def solved(self):
+    def solved(self) -> bool:
         # detect if the cube is in its solved state
         pieces = [piece for z in self.pieces for y in z for piece in y]
         initial = [piece for z in self.initial for y in z for piece in y]
         return all(map(lambda x: x[0] is x[1], zip(pieces, initial)))
 
-    def rotate(self, move: Move) -> None:
+    def rotate(self, move: Move, show: bool=True, history: bool=True) -> None:
         face = move.face + ("2" if move.turns == 2 else ("'" if move.turns == 3 else ""))
         depth = move.depth
+        if history:
+            while self.history_index != len(self.history) - 1:
+                self.history_index += 1
+                move = self.history[self.history_index]
+                self.rotate(move, True, False)
+
         if depth >= self.layers:
             # if depth to large rotate the first piece
             depth = 0
@@ -662,17 +688,18 @@ class RubiksCube:
 
         elif face.endswith("'"):
             # reverse patterns, anti-clockwise instead of clockwise
-            opposite_faces = {"F": "B", "B": "F", "R": "L", "L": "R", "U": "D", "D": "U"}
-            self.rotate(Move(opposite_faces[face[:-1]], 1, self.layers - depth - 1))
+            self.rotate(Move(self.opposite_faces[face[:-1]], 1, self.layers - depth - 1), show, history)
+            return
 
         elif face.endswith("2"):
             # 180 degree turn
-            [self.rotate(Move(face[:-1], 1, depth)) for _ in range(2)]
+            [self.rotate(Move(face[:-1], 1, depth), show, history) for _ in range(2)]
+            return
 
         # get copy of pieces to allow updating future positions before the actual pieces have stopped rotating
         pieces = [[[piece for piece in y] for y in z] for z in self.pieces]
 
-        self.moving_threads.append(threading.Thread(target=self.rotate_pieces, args=(face, depth, 3, pieces)))
+        self.moving_threads.append(threading.Thread(target=self.rotate_pieces, args=(face, depth, 3, pieces, show, history)))
 
     def handle_movement(self) -> None:
         while self.running:
@@ -690,10 +717,35 @@ class RubiksCube:
                     self.moving_threads.append(threading.Thread(target=time.sleep, args=(6,)))
                     self.solve()
 
-    def rotate_pieces(self, face: str, depth: int, steps: int, pieces: list) -> None:
+    def rotate_pieces(self, face: str, depth: int, steps: int, pieces: list, show: bool, history: bool) -> None:
         # rotate pieces in scene
-        if self.duration == 0:
+        if self.duration == 0 or not show:
             steps = 1
+
+        if depth == self.layers - 1:
+            if face in ["F", "D", "L"]:
+                current_move_text = self.opposite_faces[face] + "'"
+
+            else:
+                current_move_text = face
+
+        elif depth == 0:
+            if face in ["B", "U", "R"]:
+                current_move_text = self.opposite_faces[face] + "'"
+
+            else:
+                current_move_text = face
+
+        else:
+            if face in ["B", "U", "R"]:
+                current_move_text = self.opposite_faces[face] + "'." + str(self.layers - 1 - depth)
+
+            else:
+                current_move_text = face + "." + str(depth)
+
+        if history:
+            self.history.append(Move.from_str(current_move_text))
+            self.history_index += 1
 
         self.moving = True
 
@@ -719,7 +771,8 @@ class RubiksCube:
 
             self.tmp_pieces = [[[piece.copy() if piece is not None else None for piece in y] for y in z] for z in pieces]
 
-            time.sleep(self.duration / steps / 1000)
+            if show and self.duration != 0:
+                time.sleep(self.duration / steps / 1000)
 
         self.moving = False
 
@@ -731,38 +784,29 @@ class RubiksCube:
             turns = random.randint(1, 3)
             depth = random.randint(0, self.layers - 1)
             move = Move(face, turns, depth)
-            self.moves["scramble"].append(move)
-            self.rotate(move)
+            self.rotate(move, False)
 
     def save_state(self, global_rotation: Matrix3x3) -> str:
         state = str(self.width) + ":" + str(self.layers) + ":"
-        state += ",".join(str(x) for y in global_rotation.data for x in y) + ":"
-        return state + ",".join(map(str, self.moves["scramble"])) + ":" + ",".join(map(str, self.moves["solve"]))
+        state += str(self.duration) + ":" + str(int(self.display)) + ":"
+        state += ",".join(str(x) for y in global_rotation.data for x in y)
+        state += ":" + ",".join(map(str, self.history[1:])) + ":"
+        return state + str(self.history_index)
 
     @classmethod
     def load_state(cls, state: str) -> tuple:
         state = state.split(":")
-        obj = cls(int(state[0]), int(state[1]))
-        rotation = [float(i) for i in state[2].split(",")]
-        scramble = [i for i in state[3].split(",") if i.strip()]
-        moves = [i for i in state[4].split(",") if i.strip()]
-        for move in scramble:
-            face = move[0]
-            turns = int(move[1])
-            new_move = Move(face, turns)
-            if len(move) > 2:
-                new_move.depth = int(move[2:])
-
-            obj.rotate(new_move)
-
+        obj = cls(int(state[0]), int(state[1]), int(state[2]), int(state[3]))
+        rotation = [float(i) for i in state[4].split(",")]
+        moves = [i for i in state[5].split(",") if i.strip()]
         for move in moves:
-            face = move[0]
-            turns = int(move[1])
-            new_move = Move(face, turns)
-            if len(move) > 2:
-                new_move.depth = int(move[2:])
+            obj.history.append(Move.from_str(move))
 
-            obj.rotate(new_move)
+        index = int(state[6])
+        while obj.history_index < index:
+            obj.history_index += 1
+            move = obj.history[obj.history_index]
+            obj.rotate(move, True, False)
 
         return obj, Matrix3x3([rotation[:3], rotation[3:6], rotation[6:]])
 
@@ -1585,7 +1629,7 @@ class RubiksCube:
                     elif self.pieces[2][0][2].orient == 0:
                         self.evaluate("D' L' U' L U L' U' L D L' U L U' L' U2 L U' L' U L D L' U' L U L' U' L D'")
 
-    def evaluate(self, sequence: str):
+    def evaluate(self, sequence: str) -> None:
         str_moves = sequence.upper().split(" ")
         moves = []
         for move in str_moves:

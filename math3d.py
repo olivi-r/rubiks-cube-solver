@@ -60,6 +60,7 @@ class Vector2:
 
     def normalize(self):
         m = self.magnitude
+        m = 1 if m == 0 else m
         self.i /= m
         self.j /= m
 

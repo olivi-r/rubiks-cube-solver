@@ -49,6 +49,8 @@ wireframe = False
 if __name__ == "__main__":
     pygame.font.init()
     font = pygame.font.SysFont("Arial", 12)
+    move_font = pygame.font.SysFont("Arial", 24)
+    move_font_active = pygame.font.SysFont("Arial", 32)
     pygame.display.set_caption("Rubik's Cube Solver")
 
     # create window for tkinter's save dialog to use and hide it
@@ -60,7 +62,7 @@ if __name__ == "__main__":
 
     cam = Camera(Vector3(0, 0, -30), Vector3(0, 0, 0), 0.1)
 
-    cube = RubiksCube(12, 4, 125, display_mode)
+    cube = RubiksCube(12, 3, 125, display_mode)
 
     display_angle = rot_z(45) * rot_x(45)
     global_rotation = Matrix3x3([[1, 0, 0], [0, 1, 0], [0, 0, 1]])
@@ -72,6 +74,9 @@ if __name__ == "__main__":
     dragging_piece = False
     piece_selected = False
     selected_piece = None
+
+    back_arrow_selected = False
+    forward_arrow_selected = False
 
     fps_counter = pygame.time.Clock()
 
@@ -113,13 +118,28 @@ if __name__ == "__main__":
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     if event.button == 1:
                         if not dragging:
-                            if piece_selected:
-                                dragging_piece = True
+                            # going through the cube's past moves
+                            if back_arrow_selected:
+                                if cube.history_index > 0:
+                                    move = cube.history[cube.history_index].opposite
+                                    cube.rotate(move, True, False)
+                                    cube.history_index -= 1
 
-                            else:
-                                dragging = True
+                            elif forward_arrow_selected:
+                                if cube.history_index < len(cube.history) - 1:
+                                    cube.history_index += 1
+                                    move = cube.history[cube.history_index]
+                                    cube.rotate(move, True, False)
 
-                            pygame.mouse.get_rel()
+                            elif pygame.mouse.get_pos()[1] > 40:
+                                # dragging the cube's rotation
+                                if piece_selected:
+                                    dragging_piece = True
+
+                                else:
+                                    dragging = True
+
+                                pygame.mouse.get_rel()
 
                 if event.type == pygame.MOUSEBUTTONUP:
                     dragging = False
@@ -129,8 +149,8 @@ if __name__ == "__main__":
                     if dragging:
                         # convert mouse motion into global rotations for cube
                         mouse_delta = pygame.mouse.get_rel()
-                        global_rotation = rot_x(0.25 * mouse_delta[1]) * global_rotation
-                        global_rotation = rot_y(0.25 * mouse_delta[0]) * global_rotation
+                        global_rotation = rot_x(0.4 * mouse_delta[1]) * global_rotation
+                        global_rotation = rot_y(0.4 * mouse_delta[0]) * global_rotation
 
                     elif dragging_piece:
                         if cube.moving or cube.moving_threads:
@@ -144,7 +164,14 @@ if __name__ == "__main__":
                             continue
 
                         pieces = [piece for z in cube.tmp_pieces for y in z for piece in y]
-                        x = pieces.index(selected_piece[0])
+                        try:
+                            x = pieces.index(selected_piece[0])
+
+                        except ValueError:
+                            selected_piece = None
+                            dragging_piece = False
+                            continue
+
                         z = x // cube.layers ** 2
                         y = x // cube.layers % cube.layers
                         x %= cube.layers
@@ -220,8 +247,8 @@ if __name__ == "__main__":
                                 elif orient_map["front"][selected_piece[0].orient] == selected_piece[1]:
                                     # front side
                                     vecs = {
-                                        "U": Vector3(0, 0, -1),
-                                        "U'": Vector3(0, 0, 1),
+                                        "U": Vector3(-1, 0, 0),
+                                        "U'": Vector3(1, 0, 0),
                                         "R": Vector3(0, 1, 0),
                                         "R'": Vector3(0, -1, 0)
                                     }
@@ -829,6 +856,9 @@ if __name__ == "__main__":
 
         display.fill((255, 255, 255))
 
+        # line to separate history and cube view
+        pygame.draw.line(display, (0, 0, 0), (0, 40), (dimensions[0], 40))
+
         to_draw = []
         for z in cube.tmp_pieces:
             for y in z:
@@ -947,6 +977,75 @@ if __name__ == "__main__":
         fps = fps_counter.get_fps()
         fps_text = font.render(f"FPS: {int(fps)}", False, (0, 0, 0))
         display.blit(fps_text, (5, 5))
+
+        # display move history and controls
+        if cube.history[cube.history_index] is not None:
+            move_text = move_font_active.render(repr(cube.history[cube.history_index]), False, (0, 0, 0))
+            display.blit(move_text, (dimensions[0] / 2, 0))
+
+        if cube.history_index > 1:
+            move_text_l1 = move_font.render(repr(cube.history[cube.history_index - 1]), False, (127, 127, 127))
+            display.blit(move_text_l1, (5 * dimensions[0] / 12, 5))
+
+            if cube.history_index > 2:
+                move_text_l2 = move_font.render(repr(cube.history[cube.history_index - 2]), False, (190, 190, 190))
+                display.blit(move_text_l2, (4 * dimensions[0] / 12, 7))
+
+        if cube.history_index < len(cube.history) - 1:
+            move_text_r1 = move_font.render(repr(cube.history[cube.history_index + 1]), False, (127, 127, 127))
+            display.blit(move_text_r1, (7 * dimensions[0] / 12, 5))
+            if cube.history_index < len(cube.history) - 2:
+                move_text_r2 = move_font.render(repr(cube.history[cube.history_index + 2]), False, (190, 190, 190))
+                display.blit(move_text_r2, (8 * dimensions[0] / 12, 7))
+
+        back_arrow_points = [
+            Vector2(3 * dimensions[0] / 12 - 10, 20),
+            Vector2(3 * dimensions[0] / 12 + 10, 10),
+            Vector2(3 * dimensions[0] / 12 + 10, 30)
+        ]
+        deltas = [
+            sign(coords, back_arrow_points[0], back_arrow_points[1]),
+            sign(coords, back_arrow_points[1], back_arrow_points[2]),
+            sign(coords, back_arrow_points[2], back_arrow_points[0])
+        ]
+        neg = any(map(lambda x: x < 0, deltas))
+        pos = any(map(lambda x: x > 0, deltas))
+        if not (neg and pos):
+            back_arrow_selected = True
+
+        else:
+            back_arrow_selected = False
+
+        pygame.draw.polygon(
+            display,
+            (100, 100, 100) if back_arrow_selected else (190, 190, 190),
+            list(map(lambda x: [x.i, x.j], back_arrow_points))
+        )
+
+        forward_arrow_points = [
+            Vector2(9 * dimensions[0] / 12 + 10, 20),
+            Vector2(9 * dimensions[0] / 12 - 10, 10),
+            Vector2(9 * dimensions[0] / 12 - 10, 30)
+        ]
+        deltas = [
+            sign(coords, forward_arrow_points[0], forward_arrow_points[1]),
+            sign(coords, forward_arrow_points[1], forward_arrow_points[2]),
+            sign(coords, forward_arrow_points[2], forward_arrow_points[0])
+        ]
+        neg = any(map(lambda x: x < 0, deltas))
+        pos = any(map(lambda x: x > 0, deltas))
+        if not (neg and pos):
+            forward_arrow_selected = True
+
+        else:
+            forward_arrow_selected = False
+
+        pygame.draw.polygon(
+            display,
+            (100, 100, 100) if forward_arrow_selected else (190, 190, 190),
+            list(map(lambda x: [x.i, x.j], forward_arrow_points))
+        )
+
         pygame.display.update()
 
         if display_mode and fps != 0:
