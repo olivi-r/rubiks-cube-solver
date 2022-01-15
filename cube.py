@@ -18,7 +18,7 @@ class Move:
         return self.__class__(self.face, 4 - self.turns, self.depth)
 
     @classmethod
-    def from_str(cls, move: str):
+    def from_str(cls, move: str) -> object:
         if "." in move:
             move, depth = move.split(".")
             depth = int(depth)

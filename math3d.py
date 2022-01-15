@@ -58,7 +58,7 @@ class Vector2:
     def magnitude(self):
         return math.sqrt(self.i **2 + self.j ** 2)
 
-    def normalize(self):
+    def normalize(self) -> None:
         m = self.magnitude
         m = 1 if m == 0 else m
         self.i /= m
@@ -120,6 +120,7 @@ class Vector3(Matrix3x3):
     @j.setter
     def j(self, value):
         self.data[1][0] = value
+
     @property
     def k(self):
         return self.data[2][0]
@@ -193,7 +194,7 @@ class Mesh:
 
 
 class Camera:
-    def __init__(self, pos: Vector3, rot: Vector3, near_clip):
+    def __init__(self, pos: Vector3, rot: Vector3, near_clip: float):
         self.pos = pos
         self.rot = rot
         self.near_clip = near_clip
