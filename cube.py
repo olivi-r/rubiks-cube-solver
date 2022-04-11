@@ -57,6 +57,8 @@ class Center(Mesh):
 
         self.width = width
         self.pos = pos
+        self.orient = None
+        self.initial_orient = None
 
     def copy(self) -> object:
         new = self.__class__(self.pos, self.col, self.width)
@@ -102,6 +104,7 @@ class Edge(Mesh):
         self.width = width
         self.pos = pos
         self.orient = orient
+        self.initial_orient = orient
 
     def copy(self) -> object:
         new = self.__class__(self.pos, self.col1, self.col2, self.width, self.orient)
@@ -154,6 +157,7 @@ class Corner(Mesh):
         self.width = width
         self.pos = pos
         self.orient = orient
+        self.initial_orient = orient
 
     def copy(self) -> object:
         new = self.__class__(self.pos, self.col1, self.col2, self.col3, self.width, self.orient)
@@ -249,21 +253,20 @@ class RubiksCube:
                                 # front top edges
                                 y_layer.append(Edge(Vector3(x * piece_width - d_edge, delta, -delta), self.white, self.red, piece_width, 0))
 
+                        elif x == 0:
+                            # front middle left edges
+                            y_layer.append(Edge(Vector3(y * piece_width - d_edge, delta, -delta), self.green, self.red, piece_width, 2))
+                            y_layer[-1].rotate(rot_z(-90))
+
+                        elif x == layers - 1:
+                            # front middle right edges
+                            y_layer.append(Edge(Vector3(d_edge - y * piece_width, delta, -delta), self.blue, self.red, piece_width, 2))
+                            y_layer[-1].rotate(rot_z(90))
+
                         else:
-                            if x == 0:
-                                # front middle left edges
-                                y_layer.append(Edge(Vector3(y * piece_width - d_edge, delta, -delta), self.green, self.red, piece_width, 2))
-                                y_layer[-1].rotate(rot_z(-90))
-
-                            elif x == layers - 1:
-                                # front middle right edges
-                                y_layer.append(Edge(Vector3(d_edge - y * piece_width, delta, -delta), self.blue, self.red, piece_width, 2))
-                                y_layer[-1].rotate(rot_z(90))
-
-                            else:
-                                # front center
-                                y_layer.append(Center(Vector3(x * piece_width - d_edge, delta, y * piece_width - d_edge), self.red, piece_width))
-                                y_layer[-1].rotate(rot_x(90))
+                            # front center
+                            y_layer.append(Center(Vector3(x * piece_width - d_edge, delta, y * piece_width - d_edge), self.red, piece_width))
+                            y_layer[-1].rotate(rot_x(90))
 
                     elif z == layers - 1:
                         if y == 0:
@@ -301,72 +304,69 @@ class RubiksCube:
                                 y_layer.append(Edge(Vector3(d_edge - x * piece_width, delta, -delta), self.white, self.orange, piece_width, 0))
                                 y_layer[-1].rotate(rot_y(180))
 
+                        elif x == 0:
+                            # back left edges
+                            y_layer.append(Edge(Vector3(d_edge - y * piece_width, delta, -delta), self.green, self.orange, piece_width, 2))
+                            y_layer[-1].rotate(rot_z(90))
+                            y_layer[-1].rotate(rot_y(180))
+
+                        elif x == layers - 1:
+                            # back right edges
+                            y_layer.append(Edge(Vector3(y * piece_width - d_edge, delta, -delta), self.blue, self.orange, piece_width, 2))
+                            y_layer[-1].rotate(rot_z(-90))
+                            y_layer[-1].rotate(rot_y(180))
+
                         else:
-                            if x == 0:
-                                # back left edges
-                                y_layer.append(Edge(Vector3(d_edge - y * piece_width, delta, -delta), self.green, self.orange, piece_width, 2))
-                                y_layer[-1].rotate(rot_z(90))
-                                y_layer[-1].rotate(rot_y(180))
+                            # back center
+                            y_layer.append(Center(Vector3(x * piece_width - d_edge, delta, d_edge - y * piece_width), self.orange, piece_width))
+                            y_layer[-1].rotate(rot_x(-90))
 
-                            elif x == layers - 1:
-                                # back right edges
-                                y_layer.append(Edge(Vector3(y * piece_width - d_edge, delta, -delta), self.blue, self.orange, piece_width, 2))
-                                y_layer[-1].rotate(rot_z(-90))
-                                y_layer[-1].rotate(rot_y(180))
+                    elif y == 0:
+                        if x == 0:
+                            # middle bottom left edges
+                            y_layer.append(Edge(Vector3(z * piece_width - d_edge, delta, -delta), self.yellow, self.green, piece_width, 0))
+                            y_layer[-1].rotate(rot_z(180))
+                            y_layer[-1].rotate(rot_y(-90))
 
-                            else:
-                                # back center
-                                y_layer.append(Center(Vector3(x * piece_width - d_edge, delta, d_edge - y * piece_width), self.orange, piece_width))
-                                y_layer[-1].rotate(rot_x(-90))
+                        elif x == layers - 1:
+                            # middle bottom right edges
+                            y_layer.append(Edge(Vector3(d_edge - z * piece_width, delta, -delta), self.yellow, self.blue, piece_width, 0))
+                            y_layer[-1].rotate(rot_z(180))
+                            y_layer[-1].rotate(rot_y(90))
+
+                        else:
+                            # bottom center
+                            y_layer.append(Center(Vector3(d_edge - x * piece_width, delta, z * piece_width - d_edge), self.yellow, piece_width))
+                            y_layer[-1].rotate(rot_z(180))
+
+                    elif y == layers - 1:
+                        if x == 0:
+                            # middle top left edges
+                            y_layer.append(Edge(Vector3(d_edge - z * piece_width, delta, -delta), self.white, self.green, piece_width, 0))
+                            y_layer[-1].rotate(rot_y(-90))
+
+                        elif x == layers - 1:
+                            # middle top right edges
+                            y_layer.append(Edge(Vector3(z * piece_width - d_edge, delta, -delta), self.white, self.blue, piece_width, 0))
+                            y_layer[-1].rotate(rot_y(90))
+
+                        else:
+                            # top center
+                            y_layer.append(Center(Vector3(x * piece_width - d_edge, delta, z * piece_width - d_edge), self.white, piece_width))
+
+                    elif x == 0:
+                        # left center
+                        y_layer.append(Center(Vector3(y * piece_width - d_edge, delta, z * piece_width - d_edge), self.green, piece_width))
+                        y_layer[-1].rotate(rot_z(-90))
+
+                    elif x == layers - 1:
+                        # right center
+                        y_layer.append(Center(Vector3(d_edge - y * piece_width, delta, z * piece_width - d_edge), self.blue, piece_width))
+                        y_layer[-1].rotate(rot_z(90))
 
                     else:
-                        if y == 0:
-                            if x == 0:
-                                # middle bottom left edges
-                                y_layer.append(Edge(Vector3(z * piece_width - d_edge, delta, -delta), self.yellow, self.green, piece_width, 0))
-                                y_layer[-1].rotate(rot_z(180))
-                                y_layer[-1].rotate(rot_y(-90))
-
-                            elif x == layers - 1:
-                                # middle bottom right edges
-                                y_layer.append(Edge(Vector3(d_edge - z * piece_width, delta, -delta), self.yellow, self.blue, piece_width, 0))
-                                y_layer[-1].rotate(rot_z(180))
-                                y_layer[-1].rotate(rot_y(90))
-
-                            else:
-                                # bottom center
-                                y_layer.append(Center(Vector3(d_edge - x * piece_width, delta, z * piece_width - d_edge), self.yellow, piece_width))
-                                y_layer[-1].rotate(rot_z(180))
-
-                        elif y == layers - 1:
-                            if x == 0:
-                                # middle top left edges
-                                y_layer.append(Edge(Vector3(d_edge - z * piece_width, delta, -delta), self.white, self.green, piece_width, 0))
-                                y_layer[-1].rotate(rot_y(-90))
-
-                            elif x == layers - 1:
-                                # middle top right edges
-                                y_layer.append(Edge(Vector3(z * piece_width - d_edge, delta, -delta), self.white, self.blue, piece_width, 0))
-                                y_layer[-1].rotate(rot_y(90))
-
-                            else:
-                                # top center
-                                y_layer.append(Center(Vector3(x * piece_width - d_edge, delta, z * piece_width - d_edge), self.white, piece_width))
-
-                        else:
-                            if x == 0:
-                                # left center
-                                y_layer.append(Center(Vector3(y * piece_width - d_edge, delta, z * piece_width - d_edge), self.green, piece_width))
-                                y_layer[-1].rotate(rot_z(-90))
-
-                            elif x == layers - 1:
-                                # right center
-                                y_layer.append(Center(Vector3(d_edge - y * piece_width, delta, z * piece_width - d_edge), self.blue, piece_width))
-                                y_layer[-1].rotate(rot_z(90))
-
-                            else:
-                                # interior pieces
-                                y_layer.append(None)
+                        # interior pieces
+                        y_layer.append(None)
 
                 z_layer.append(y_layer)
 
@@ -387,9 +387,12 @@ class RubiksCube:
     @property
     def solved(self) -> bool:
         # detect if the cube is in its solved state
-        pieces = [piece for z in self.pieces for y in z for piece in y]
-        initial = [piece for z in self.initial for y in z for piece in y]
-        return all(map(lambda x: x[0] is x[1], zip(pieces, initial)))
+        pieces = [piece for z in self.pieces for y in z for piece in y if piece is not None]
+        initial = [piece for z in self.initial for y in z for piece in y if piece is not None]
+        return all(map(
+            lambda x: x[0] is x[1] and x[0].orient == x[0].initial_orient,
+            zip(pieces, initial)
+        ))
 
     def rotate(self, move: Move, show: bool=True, history: bool=True) -> None:
         face = move.face + ("2" if move.turns == 2 else ("'" if move.turns == 3 else ""))
@@ -435,12 +438,11 @@ class RubiksCube:
                             elif self.pieces[depth][i][j].orient == 3:
                                 self.pieces[depth][i][j].orient = 1
 
-                        else:
-                            if self.pieces[depth][i][j].orient == 0:
-                                self.pieces[depth][i][j].orient = 1
+                        elif self.pieces[depth][i][j].orient == 0:
+                            self.pieces[depth][i][j].orient = 1
 
-                            elif self.pieces[depth][i][j].orient == 1:
-                                self.pieces[depth][i][j].orient = 0
+                        elif self.pieces[depth][i][j].orient == 1:
+                            self.pieces[depth][i][j].orient = 0
 
             for j in range(self.layers // 2):
                 # update corner positions
@@ -491,12 +493,11 @@ class RubiksCube:
                             elif self.pieces[depth][i][j].orient == 3:
                                 self.pieces[depth][i][j].orient = 1
 
-                        else:
-                            if self.pieces[depth][i][j].orient == 0:
-                                self.pieces[depth][i][j].orient = 1
+                        elif self.pieces[depth][i][j].orient == 0:
+                            self.pieces[depth][i][j].orient = 1
 
-                            elif self.pieces[depth][i][j].orient == 1:
-                                self.pieces[depth][i][j].orient = 0
+                        elif self.pieces[depth][i][j].orient == 1:
+                            self.pieces[depth][i][j].orient = 0
 
             for j in range(self.layers // 2):
                 # update corner positions
@@ -547,12 +548,11 @@ class RubiksCube:
                             elif self.pieces[i][j][depth].orient == 2:
                                 self.pieces[i][j][depth].orient = 1
 
-                        else:
-                            if self.pieces[i][j][depth].orient == 0:
-                                self.pieces[i][j][depth].orient = 1
+                        elif self.pieces[i][j][depth].orient == 0:
+                            self.pieces[i][j][depth].orient = 1
 
-                            elif self.pieces[i][j][depth].orient == 1:
-                                self.pieces[i][j][depth].orient = 0
+                        elif self.pieces[i][j][depth].orient == 1:
+                            self.pieces[i][j][depth].orient = 0
 
             for j in range(self.layers // 2):
                 # update corner positions
@@ -601,12 +601,11 @@ class RubiksCube:
                             elif self.pieces[i][j][depth].orient == 2:
                                 self.pieces[i][j][depth].orient = 1
 
-                        else:
-                            if self.pieces[i][j][depth].orient == 0:
-                                self.pieces[i][j][depth].orient = 1
+                        elif self.pieces[i][j][depth].orient == 0:
+                            self.pieces[i][j][depth].orient = 1
 
-                            elif self.pieces[i][j][depth].orient == 1:
-                                self.pieces[i][j][depth].orient = 0
+                        elif self.pieces[i][j][depth].orient == 1:
+                            self.pieces[i][j][depth].orient = 0
 
             for j in range(self.layers // 2):
                 # update corner positions
@@ -736,12 +735,11 @@ class RubiksCube:
             else:
                 current_move_text = face
 
-        else:
-            if face in ["B", "U", "R"]:
-                current_move_text = self.opposite_faces[face] + "'." + str(self.layers - 1 - depth)
+        elif face in ["B", "U", "R"]:
+            current_move_text = self.opposite_faces[face] + "'." + str(self.layers - 1 - depth)
 
-            else:
-                current_move_text = face + "." + str(depth)
+        else:
+            current_move_text = face + "." + str(depth)
 
         if history:
             self.history.append(Move.from_str(current_move_text))
@@ -823,12 +821,11 @@ class RubiksCube:
                     else:
                         self.evaluate("L' D L")
 
-                else:
-                    if z == 0:
-                        self.evaluate("R' D R")
+                elif z == 0:
+                    self.evaluate("R' D R")
 
-                    else:
-                        self.evaluate("R D' R'")
+                else:
+                    self.evaluate("R D' R'")
 
             # front top left
             for z, z_row in enumerate(self.pieces):
@@ -836,17 +833,20 @@ class RubiksCube:
                     for x, piece in enumerate(y_row):
                         if piece.col1 == self.white and piece.col2 == self.green and piece.col3 == self.red:
                             if y == 1:
+                                if x == 0 and z == 0:
+                                    break
+
                                 drop_y(x, z)
 
                             if x == 1:
                                 if z == 0:
-                                    self.rotate(Move("D", 3))
+                                    self.evaluate("D'")
 
                                 else:
-                                    self.rotate(Move("D", 2))
+                                    self.evaluate("D2")
 
                             elif z == 1:
-                                self.rotate(Move("D"))
+                                self.evaluate("D")
 
                             self.evaluate("L D L'")
 
@@ -856,17 +856,20 @@ class RubiksCube:
                     for x, piece in enumerate(y_row):
                         if piece.col1 == self.white and piece.col2 == self.red and piece.col3 == self.blue:
                             if y == 1:
+                                if x == 1 and z == 0:
+                                    break
+
                                 drop_y(x, z)
 
                             if x == 0:
                                 if z == 0:
-                                    self.rotate(Move("D"))
+                                    self.evaluate("D")
 
                                 else:
-                                    self.rotate(Move("D", 2))
+                                    self.evaluate("D2")
 
                             elif z == 1:
-                                self.rotate(Move("D", 3))
+                                self.evaluate("D'")
 
                             self.evaluate("R' D' R")
 
@@ -876,17 +879,20 @@ class RubiksCube:
                     for x, piece in enumerate(y_row):
                         if piece.col1 == self.white and piece.col2 == self.orange and piece.col3 == self.green:
                             if y == 1:
+                                if x == 0 and z == 1:
+                                    break
+
                                 drop_y(x, z)
 
                             if x == 1:
                                 if z == 0:
-                                    self.rotate(Move("D", 2))
+                                    self.evaluate("D2")
 
                                 else:
-                                    self.rotate(Move("D"))
+                                    self.evaluate("D")
 
                             elif z == 0:
-                                self.rotate(Move("D", 3))
+                                self.evaluate("D'")
 
                             self.evaluate("L' D' L")
 
@@ -896,17 +902,20 @@ class RubiksCube:
                     for x, piece in enumerate(y_row):
                         if piece.col1 == self.white and piece.col2 == self.blue and piece.col3 == self.orange:
                             if y == 1:
+                                if x == 1 and z == 1:
+                                    break
+
                                 drop_y(x, z)
 
                             if x == 0:
                                 if z == 0:
-                                    self.rotate(Move("D", 2))
+                                    self.evaluate("D2")
 
                                 else:
-                                    self.rotate(Move("D", 3))
+                                    self.evaluate("D'")
 
                             elif z == 0:
-                                self.rotate(Move("D"))
+                                self.evaluate("D")
 
                             self.evaluate("R D R'")
 
@@ -942,13 +951,13 @@ class RubiksCube:
                         if piece.col1 == self.yellow and piece.col2 == self.red and piece.col3 == self.green:
                             if z == 1:
                                 if x == 0:
-                                    self.rotate(Move("D"))
+                                    self.evaluate("D")
 
                                 else:
-                                    self.rotate(Move("D", 2))
+                                    self.evaluate("D2")
 
                             elif x == 1:
-                                self.rotate(Move("D", 3))
+                                self.evaluate("D'")
 
             for z, z_row in enumerate(self.pieces):
                 for y, y_row in enumerate(z_row):
@@ -964,7 +973,10 @@ class RubiksCube:
                 self.evaluate("L' D R D' L D R' D' L' D R D' L D R'")
 
             for _ in range(4):
-                self.rotate(Move("D"))
+                if self.solved:
+                    break
+
+                self.evaluate("D")
 
                 if self.pieces[0][0][0].orient == 1:
                     if self.pieces[0][0][1].orient == 2:
@@ -1011,29 +1023,29 @@ class RubiksCube:
             # centers cannot turn relatively, aligning two aligns them all
             if self.pieces[1][2][1].col != self.white:
                 if self.pieces[0][1][1].col == self.white:
-                    self.rotate(Move("R", 1, 1))
+                    self.evaluate("R.1")
 
                 elif self.pieces[2][1][1].col == self.white:
-                    self.rotate(Move("L", 1, 1))
+                    self.evaluate("L.1")
 
                 elif self.pieces[1][1][0].col == self.white:
-                    self.rotate(Move("F", 1, 1))
+                    self.evaluate("F.1")
 
                 elif self.pieces[1][1][2].col == self.white:
-                    self.rotate(Move("B", 1, 1))
+                    self.evaluate("B.1")
 
                 else:
-                    self.rotate(Move("F", 2, 1))
+                    self.evaluate("F2.1")
 
             if self.pieces[0][1][1].col != self.red:
                 if self.pieces[1][1][2].col == self.red:
-                    self.rotate(Move("U", 1, 1))
+                    self.evaluate("U.1")
 
                 elif self.pieces[1][1][0].col == self.red:
-                    self.rotate(Move("D", 1, 1))
+                    self.evaluate("D.1")
 
                 else:
-                    self.rotate(Move("U", 2, 1))
+                    self.evaluate("U2.1")
 
             # construct white cross
             for z, z_row in enumerate(self.pieces):
@@ -1042,13 +1054,13 @@ class RubiksCube:
                         if isinstance(piece, Edge) and piece.col1 == self.white and piece.col2 == self.red:
                             if y == 2:
                                 if x == 0:
-                                    self.rotate(Move("U", 3))
+                                    self.evaluate("U'")
 
                                 elif x == 2:
-                                    self.rotate(Move("U"))
+                                    self.evaluate("U")
 
                                 elif z == 2:
-                                    self.rotate(Move("U", 2))
+                                    self.evaluate("U2")
 
                             elif y == 0:
                                 if x == 0:
@@ -1063,20 +1075,18 @@ class RubiksCube:
                                 elif z == 2:
                                     self.evaluate("B2 U2")
 
-                            else:
-                                if z == 0:
-                                    if x == 0:
-                                        self.rotate(Move("F"))
-
-                                    else:
-                                        self.rotate(Move("F", 3))
+                            elif z == 0:
+                                if x == 0:
+                                    self.evaluate("F")
 
                                 else:
-                                    if x == 0:
-                                        self.evaluate("B' U2")
+                                    self.evaluate("F'")
 
-                                    else:
-                                        self.evaluate("B U2")
+                            elif x == 0:
+                                self.evaluate("B' U2")
+
+                            else:
+                                self.evaluate("B U2")
 
             for z, z_row in enumerate(self.pieces):
                 for y, y_row in enumerate(z_row):
@@ -1091,7 +1101,7 @@ class RubiksCube:
 
                             elif y == 0:
                                 if x == 0:
-                                    self.rotate(Move("L", 2))
+                                    self.evaluate("L2")
 
                                 elif x == 2:
                                     self.evaluate("D2 L2")
@@ -1102,20 +1112,18 @@ class RubiksCube:
                                 elif z == 2:
                                     self.evaluate("D L2")
 
-                            else:
-                                if z == 0:
-                                    if x == 0:
-                                        self.rotate(Move("L", 3))
-
-                                    else:
-                                        self.evaluate("U' F' U")
+                            elif z == 0:
+                                if x == 0:
+                                    self.evaluate("L'")
 
                                 else:
-                                    if x == 0:
-                                        self.rotate(Move("L"))
+                                    self.evaluate("U' F' U")
 
-                                    else:
-                                        self.evaluate("U2 R' U2")
+                            elif x == 0:
+                                self.evaluate("L")
+
+                            else:
+                                self.evaluate("U2 R' U2")
 
             for z, z_row in enumerate(self.pieces):
                 for y, y_row in enumerate(z_row):
@@ -1130,7 +1138,7 @@ class RubiksCube:
                                     self.evaluate("D2 R2")
 
                                 elif x == 2:
-                                    self.rotate(Move("R", 2))
+                                    self.evaluate("R2")
 
                                 elif z == 0:
                                     self.evaluate("D R2")
@@ -1138,20 +1146,18 @@ class RubiksCube:
                                 elif z == 2:
                                     self.evaluate("D' R2")
 
-                            else:
-                                if z == 0:
-                                    if x == 0:
-                                        self.evaluate("L D2 R2 L'")
-
-                                    else:
-                                        self.rotate(Move("R"))
+                            elif z == 0:
+                                if x == 0:
+                                    self.evaluate("L D2 R2 L'")
 
                                 else:
-                                    if x == 0:
-                                        self.evaluate("B2 R'")
+                                    self.evaluate("R")
 
-                                    else:
-                                        self.rotate(Move("R", 3))
+                            elif x == 0:
+                                self.evaluate("B2 R'")
+
+                            else:
+                                self.evaluate("R'")
 
             for z, z_row in enumerate(self.pieces):
                 for y, y_row in enumerate(z_row):
@@ -1169,7 +1175,7 @@ class RubiksCube:
                                         self.evaluate("D2 B2")
 
                                     elif z == 2:
-                                        self.rotate(Move("B", 2))
+                                        self.evaluate("B2")
 
                                 elif y == 1:
                                     if z == 0:
@@ -1179,12 +1185,11 @@ class RubiksCube:
                                         else:
                                             self.evaluate("R' D B2 R")
 
-                                    else:
-                                        if x == 0:
-                                            self.rotate(Move("B", 3))
+                                    elif x == 0:
+                                        self.evaluate("B'")
 
-                                        else:
-                                            self.rotate(Move("B"))
+                                    else:
+                                        self.evaluate("B")
 
             # rotate top edges correctly
             if self.pieces[0][2][1].orient == 1:
@@ -1215,19 +1220,18 @@ class RubiksCube:
                                     else:
                                         self.evaluate("B' L D2 B L'")
 
-                            else:
-                                if z == 0:
-                                    if x == 0:
-                                        self.evaluate("L D L'")
-
-                                    else:
-                                        self.evaluate("D' L D L'")
-
-                                elif x == 0:
-                                    self.evaluate("D L D L'")
+                            elif z == 0:
+                                if x == 0:
+                                    self.evaluate("L D L'")
 
                                 else:
-                                    self.evaluate("D2 L D L'")
+                                    self.evaluate("D' L D L'")
+
+                            elif x == 0:
+                                self.evaluate("D L D L'")
+
+                            else:
+                                self.evaluate("D2 L D L'")
 
             for z, z_row in enumerate(self.pieces):
                 for y, y_row in enumerate(z_row):
@@ -1345,38 +1349,35 @@ class RubiksCube:
                                     else:
                                         self.evaluate("D' F' D F D L D' L'")
 
+                                elif piece.orient == 0:
+                                    self.evaluate("L D' L' D' F' D F")
+
                                 else:
-                                    if piece.orient == 0:
-                                        self.evaluate("L D' L' D' F' D F")
+                                    self.evaluate("D F' D F D L D' L'")
+
+                            elif z == 0:
+                                if x == 0 and piece.orient == 3:
+                                    self.evaluate("L D' L' D' F' D F D' L D' L' D' F' D F")
+
+                                elif x == 2:
+                                    if piece.orient == 2:
+                                        self.evaluate("F D' F' D' R' D R D2 L D' L' D' F' D F")
 
                                     else:
-                                        self.evaluate("D F' D F D L D' L'")
+                                        self.evaluate("F D' F' D' R' D R D' F' D F D L D' L'")
+
+                            elif x == 0:
+                                if piece.orient == 2:
+                                    self.evaluate("B D' B' D' L' D L2 D' L' D' F' D F")
+
+                                else:
+                                    self.evaluate("B D' B' D' L' D L D F' D F D L D' L'")
+
+                            elif piece.orient == 2:
+                                self.evaluate("R D' R' D' B' D B D2 F' D F D L D' L'")
 
                             else:
-                                if z == 0:
-                                    if x == 0 and piece.orient == 3:
-                                        self.evaluate("L D' L' D' F' D F D' L D' L' D' F' D F")
-
-                                    elif x == 2:
-                                        if piece.orient == 2:
-                                            self.evaluate("F D' F' D' R' D R D2 L D' L' D' F' D F")
-
-                                        else:
-                                            self.evaluate("F D' F' D' R' D R D' F' D F D L D' L'")
-
-                                elif x == 0:
-                                    if piece.orient == 2:
-                                        self.evaluate("B D' B' D' L' D L2 D' L' D' F' D F")
-
-                                    else:
-                                        self.evaluate("B D' B' D' L' D L D F' D F D L D' L'")
-
-                                else:
-                                    if piece.orient == 2:
-                                        self.evaluate("R D' R' D' B' D B D2 F' D F D L D' L'")
-
-                                    else:
-                                        self.evaluate("R D' R' D' B' D B D L D' L' D' F' D F")
+                                self.evaluate("R D' R' D' B' D B D L D' L' D' F' D F")
 
             for z, z_row in enumerate(self.pieces):
                 for y, y_row in enumerate(z_row):
@@ -1404,30 +1405,28 @@ class RubiksCube:
                                     else:
                                         self.evaluate("D' F D' F' D' R' D R")
 
+                                elif piece.orient == 0:
+                                    self.evaluate("D2 R' D R D F D' F'")
+
                                 else:
-                                    if piece.orient == 0:
-                                        self.evaluate("D2 R' D R D F D' F'")
+                                    self.evaluate("D F D' F' D' R' D R")
+
+                            elif z == 0 and x == 2 and piece.orient == 3:
+                                self.evaluate("F D' F' D' R' D R D' F D' F' D' R' D R")
+
+                            elif z == 2:
+                                if x == 0:
+                                    if piece.orient == 2:
+                                        self.evaluate("B D' B' D' L' D L D2 R' D R D F D' F'")
 
                                     else:
-                                        self.evaluate("D F D' F' D' R' D R")
+                                        self.evaluate("B D' B' D' L' D L D F D' F' D' R' D R")
 
-                            else:
-                                if z == 0 and x == 2 and piece.orient == 3:
-                                    self.evaluate("F D' F' D' R' D R D' F D' F' D' R' D R")
+                                elif piece.orient == 2:
+                                    self.evaluate("R D' R' D' B' D B D2 F D' F' D' R' D R")
 
-                                elif z == 2:
-                                    if x == 0:
-                                        if piece.orient == 2:
-                                            self.evaluate("B D' B' D' L' D L D2 R' D R D F D' F'")
-
-                                        else:
-                                            self.evaluate("B D' B' D' L' D L D F D' F' D' R' D R")
-
-                                    elif piece.orient == 2:
-                                        self.evaluate("R D' R' D' B' D B D2 F D' F' D' R' D R")
-
-                                    else:
-                                        self.evaluate("R D' R' D' B' D B D' R' D R D F D' F'")
+                                else:
+                                    self.evaluate("R D' R' D' B' D B D' R' D R D F D' F'")
 
             for z, z_row in enumerate(self.pieces):
                 for y, y_row in enumerate(z_row):
@@ -1461,16 +1460,15 @@ class RubiksCube:
                                 else:
                                     self.evaluate("D' B D' B' D' L' D L")
 
-                            else:
-                                if x == 0 and piece.orient == 3:
-                                    self.evaluate("B D' B' D' L' D L D' B D' B' D' L' D L")
+                            elif x == 0 and piece.orient == 3:
+                                self.evaluate("B D' B' D' L' D L D' B D' B' D' L' D L")
 
-                                elif x == 2:
-                                    if piece.orient == 2:
-                                        self.evaluate("R D' R' D' B' D B B D' B' D' L' D L")
+                            elif x == 2:
+                                if piece.orient == 2:
+                                    self.evaluate("R D' R' D' B' D B B D' B' D' L' D L")
 
-                                    else:
-                                        self.evaluate("R D' R' D' B' D B D L' D L D B D' B'")
+                                else:
+                                    self.evaluate("R D' R' D' B' D B D L' D L D B D' B'")
 
             for z, z_row in enumerate(self.pieces):
                 for y, y_row in enumerate(z_row):
@@ -1589,7 +1587,10 @@ class RubiksCube:
                     self.evaluate("D B D' F' D B' D' F")
 
             for _ in range(4):
-                self.rotate(Move("D"))
+                if self.solved:
+                    break
+
+                self.evaluate("D")
 
                 if self.pieces[0][0][0].orient == 1:
                     if self.pieces[0][0][2].orient == 2:
