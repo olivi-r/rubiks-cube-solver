@@ -28,8 +28,14 @@ def sign(p1: list, p2: list, p3: list) -> float:
 
 def drag_face(cube: RubiksCube, cam: Camera, mouse_delta: Vector2, vectors: dict) -> None:
     new_vecs = {}
+    if cube.layers == 3:
+        rot = global_rotation3x3
+
+    elif cube.layers == 2:
+        rot = global_rotation2x2
+
     for move, vec in vectors.items():
-        new_vec = cam.world_to_camera(global_rotation * vec)
+        new_vec = cam.world_to_camera(rot * vec)
         new_vec = Vector2(new_vec.i, -new_vec.j)
         new_vec.normalize()
         new_vecs[move] = new_vec.dot(mouse_delta)
@@ -43,7 +49,8 @@ def drag_face(cube: RubiksCube, cam: Camera, mouse_delta: Vector2, vectors: dict
 
 dimensions = [800, 450]
 
-display_mode = False
+display_mode3x3 = False
+display_mode2x2 = False
 wireframe = False
 
 if __name__ == "__main__":
@@ -62,23 +69,41 @@ if __name__ == "__main__":
 
     cam = Camera(Vector3(0, 0, -30), Vector3(0, 0, 0), 0.1)
 
-    cube = RubiksCube(12, 3, 125, display_mode)
+    cube3x3 = RubiksCube(12, 3, 125, display_mode3x3)
+    cube2x2 = RubiksCube(12, 2, 125, display_mode2x2)
+    cube = cube3x3
+
+    global_rotation3x3 = Matrix3x3([[1, 0, 0], [0, 1, 0], [0, 0, 1]])
+    global_rotation2x2 = Matrix3x3([[1, 0, 0], [0, 1, 0], [0, 0, 1]])
 
     display_angle = rot_z(45) * rot_x(45)
-    global_rotation = Matrix3x3([[1, 0, 0], [0, 1, 0], [0, 0, 1]])
 
-    if display_mode:
-        global_rotation = display_angle * global_rotation
+    if cube3x3.display:
+        global_rotation3x3 = display_angle * global_rotation3x3
+
+    if cube2x2.display:
+        global_rotation2x2 = display_angle * global_rotation2x2
 
     dragging = False
     dragging_piece = False
     piece_selected = False
     selected_piece = None
 
+    solve_btn_selected = False
+    scramble_btn_selected = False
+
     back_arrow_selected = False
     forward_arrow_selected = False
 
     fps_counter = pygame.time.Clock()
+
+    btn_not_selected = (255, 255, 255)
+    btn_selected = (200, 200, 200)
+
+    swap_selected = False
+
+    save_selected = False
+    load_selected = False
 
     running = True
     while running:
@@ -89,9 +114,16 @@ if __name__ == "__main__":
 
             if event.type == pygame.VIDEORESIZE:
                 # adjust content when window resized
-                dimensions = event.size
 
-            if not display_mode:
+                # clamp minimun size
+                size = [
+                    max(event.size[0], 685),
+                    max(event.size[1], 343)
+                ]
+                dimensions = size
+                display = pygame.display.set_mode(dimensions, pygame.RESIZABLE)
+
+            if not cube.display:
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_s:
                         name = asksaveasfilename(initialfile="rubiks cube.save", defaultextension=".save", filetypes=[
@@ -99,7 +131,11 @@ if __name__ == "__main__":
                         ])
                         if name != "":
                             with open(name, "w+") as fp:
-                                fp.write(cube.save_state(global_rotation))
+                                if cube.layers == 3:
+                                    fp.write(cube.save_state(global_rotation3x3))
+
+                                elif cube.layers == 2:
+                                    fp.write(cube.save_state(global_rotation2x2))
 
                     if event.key == pygame.K_a:
                         name = askopenfilename(defaultextension=".save", filetypes=[
@@ -107,19 +143,32 @@ if __name__ == "__main__":
                         ])
                         if os.path.exists(name):
                             with open(name, "r") as fp:
-                                cube, global_rotation = cube.load_state(fp.read())
+                                cube, rot = cube.load_state(fp.read())
+                                if cube.layers == 3:
+                                    global_rotation3x3 = rot
 
-                    if event.key == pygame.K_0:
-                        cube.scramble()
+                                elif cube.layers == 2:
+                                    global_rotation2x2 = rot
 
-                    if event.key == pygame.K_1:
-                        cube.solve()
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if event.button == 1:
+                    if not dragging:
+                        if swap_selected:
+                            if cube.layers == 2:
+                                cube = cube3x3
 
-                if event.type == pygame.MOUSEBUTTONDOWN:
-                    if event.button == 1:
-                        if not dragging:
+                            elif cube.layers == 3:
+                                cube = cube2x2
+
+                        if not cube.display:
+                            if solve_btn_selected:
+                                cube.solve()
+
+                            elif scramble_btn_selected:
+                                cube.scramble()
+
                             # going through the cube's past moves
-                            if back_arrow_selected:
+                            elif back_arrow_selected:
                                 if cube.history_index > 0:
                                     move = cube.history[cube.history_index].opposite
                                     cube.rotate(move, True, False)
@@ -141,6 +190,7 @@ if __name__ == "__main__":
 
                                 pygame.mouse.get_rel()
 
+            if not cube.display:
                 if event.type == pygame.MOUSEBUTTONUP:
                     dragging = False
                     dragging_piece = False
@@ -149,8 +199,12 @@ if __name__ == "__main__":
                     if dragging:
                         # convert mouse motion into global rotations for cube
                         mouse_delta = pygame.mouse.get_rel()
-                        global_rotation = rot_x(0.4 * mouse_delta[1]) * global_rotation
-                        global_rotation = rot_y(0.4 * mouse_delta[0]) * global_rotation
+                        delta = rot_x(0.4 * mouse_delta[1]) * rot_y(0.4 * mouse_delta[0])
+                        if cube.layers == 3:
+                            global_rotation3x3 = delta * global_rotation3x3
+
+                        elif cube.layers == 2:
+                            global_rotation2x2 = delta * global_rotation2x2
 
                     elif dragging_piece:
                         if cube.moving or cube.moving_threads:
@@ -867,7 +921,12 @@ if __name__ == "__main__":
                         continue
 
                     tmp_piece = piece.copy()
-                    tmp_piece.rotate(global_rotation)
+                    if cube.layers == 3:
+                        tmp_piece.rotate(global_rotation3x3)
+
+                    elif cube.layers == 2:
+                        tmp_piece.rotate(global_rotation2x2)
+
                     for face, poly in enumerate(tmp_piece.polys):
                         backface = False
                         if (poly.triangles[0].p1 - cam.pos).dot(poly.normal) > 0:
@@ -964,7 +1023,7 @@ if __name__ == "__main__":
 
                 # draw shapes
                 points = [[vec.i, vec.j] for vec in points]
-                if not selected or display_mode:
+                if not selected or cube.display:
                     pygame.draw.polygon(display, tri.col, points, width=10 if wireframe else 0)
 
                 else:
@@ -975,82 +1034,247 @@ if __name__ == "__main__":
         # display fps in top left
         fps_counter.tick()
         fps = fps_counter.get_fps()
-        fps_text = font.render(f"FPS: {int(fps)}", False, (0, 0, 0))
+        fps_text = font.render(f"FPS: {int(fps)}", True, (0, 0, 0))
         display.blit(fps_text, (5, 5))
 
-        # display move history and controls
-        if cube.history[cube.history_index] is not None:
-            move_text = move_font_active.render(repr(cube.history[cube.history_index]), False, (0, 0, 0))
-            display.blit(move_text, (dimensions[0] / 2, 0))
+        if fps != 0:
+            # frame independently rotate the cube around y-axis
+            if cube3x3.display:
+                global_rotation3x3 = rot_y(10 / fps) * global_rotation3x3
 
-        if cube.history_index > 1:
-            move_text_l1 = move_font.render(repr(cube.history[cube.history_index - 1]), False, (127, 127, 127))
-            display.blit(move_text_l1, (5 * dimensions[0] / 12, 5))
+            if cube2x2.display:
+                global_rotation2x2 = rot_y(10 / fps) * global_rotation2x2
 
-            if cube.history_index > 2:
-                move_text_l2 = move_font.render(repr(cube.history[cube.history_index - 2]), False, (190, 190, 190))
-                display.blit(move_text_l2, (4 * dimensions[0] / 12, 7))
+        if not cube.display:
+            # display move history and controls
+            if cube.history[cube.history_index] is not None:
+                move_text = move_font_active.render(repr(cube.history[cube.history_index]), True, (0, 0, 0))
+                display.blit(move_text, (dimensions[0] / 2, 0))
 
-        if cube.history_index < len(cube.history) - 1:
-            move_text_r1 = move_font.render(repr(cube.history[cube.history_index + 1]), False, (127, 127, 127))
-            display.blit(move_text_r1, (7 * dimensions[0] / 12, 5))
-            if cube.history_index < len(cube.history) - 2:
-                move_text_r2 = move_font.render(repr(cube.history[cube.history_index + 2]), False, (190, 190, 190))
-                display.blit(move_text_r2, (8 * dimensions[0] / 12, 7))
+            if cube.history_index > 1:
+                move_text_l1 = move_font.render(repr(cube.history[cube.history_index - 1]), True, (127, 127, 127))
+                display.blit(move_text_l1, (5 * dimensions[0] / 12, 5))
 
-        back_arrow_points = [
-            Vector2(3 * dimensions[0] / 12 - 10, 20),
-            Vector2(3 * dimensions[0] / 12 + 10, 10),
-            Vector2(3 * dimensions[0] / 12 + 10, 30)
+                if cube.history_index > 2:
+                    move_text_l2 = move_font.render(repr(cube.history[cube.history_index - 2]), True, (190, 190, 190))
+                    display.blit(move_text_l2, (4 * dimensions[0] / 12, 7))
+
+            if cube.history_index < len(cube.history) - 1:
+                move_text_r1 = move_font.render(repr(cube.history[cube.history_index + 1]), True, (127, 127, 127))
+                display.blit(move_text_r1, (7 * dimensions[0] / 12, 5))
+                if cube.history_index < len(cube.history) - 2:
+                    move_text_r2 = move_font.render(repr(cube.history[cube.history_index + 2]), True, (190, 190, 190))
+                    display.blit(move_text_r2, (8 * dimensions[0] / 12, 7))
+
+            back_arrow_points = [
+                Vector2(3 * dimensions[0] / 12 - 10, 20),
+                Vector2(3 * dimensions[0] / 12 + 10, 10),
+                Vector2(3 * dimensions[0] / 12 + 10, 30)
+            ]
+            deltas = [
+                sign(coords, back_arrow_points[0], back_arrow_points[1]),
+                sign(coords, back_arrow_points[1], back_arrow_points[2]),
+                sign(coords, back_arrow_points[2], back_arrow_points[0])
+            ]
+            neg = any(map(lambda x: x < 0, deltas))
+            pos = any(map(lambda x: x > 0, deltas))
+            if not (neg and pos):
+                back_arrow_selected = True
+
+            else:
+                back_arrow_selected = False
+
+            pygame.draw.polygon(
+                display,
+                (100, 100, 100) if back_arrow_selected else (190, 190, 190),
+                list(map(lambda x: [x.i, x.j], back_arrow_points))
+            )
+
+            forward_arrow_points = [
+                Vector2(9 * dimensions[0] / 12 + 10, 20),
+                Vector2(9 * dimensions[0] / 12 - 10, 10),
+                Vector2(9 * dimensions[0] / 12 - 10, 30)
+            ]
+            deltas = [
+                sign(coords, forward_arrow_points[0], forward_arrow_points[1]),
+                sign(coords, forward_arrow_points[1], forward_arrow_points[2]),
+                sign(coords, forward_arrow_points[2], forward_arrow_points[0])
+            ]
+            neg = any(map(lambda x: x < 0, deltas))
+            pos = any(map(lambda x: x > 0, deltas))
+            if not (neg and pos):
+                forward_arrow_selected = True
+
+            else:
+                forward_arrow_selected = False
+
+            pygame.draw.polygon(
+                display,
+                (100, 100, 100) if forward_arrow_selected else (190, 190, 190),
+                list(map(lambda x: [x.i, x.j], forward_arrow_points))
+            )
+
+            # scramble button
+            scramble_btn = pygame.rect.Rect(dimensions[0] / 12 - 2, 7, 88, 25)
+
+            pygame.draw.rect(
+                display,
+                btn_selected if scramble_btn_selected else btn_not_selected,
+                scramble_btn
+            )
+
+            scramble_btn_text = move_font.render("Scramble", True, (0, 0, 0))
+            display.blit(scramble_btn_text, (dimensions[0] / 12, 5))
+
+            # solve button
+            solve_btn = pygame.rect.Rect(10 * dimensions[0] / 12 - 2, 7, 53, 25)
+
+            pygame.draw.rect(
+                display,
+                btn_selected if solve_btn_selected else btn_not_selected,
+                solve_btn
+            )
+
+            solve_btn_text = move_font.render("Solve", True, (0, 0, 0))
+            display.blit(solve_btn_text, (10 * dimensions[0] / 12, 5))
+
+            # detect hovering over buttons
+            scramble_btn_selected = scramble_btn.collidepoint(coords.i, coords.j)
+            solve_btn_selected = solve_btn.collidepoint(coords.i, coords.j)
+
+
+            # save button
+            save_offset = [dimensions[0] / 30, 19 * dimensions[1] / 20]
+
+            save_btn = pygame.rect.Rect(
+                save_offset[0] - 5, save_offset[1] - 18, 28, 33
+            )
+
+            save_selected = save_btn.collidepoint(coords.i, coords.j)
+
+            pygame.draw.rect(
+                display, (200, 200, 200) if save_selected else (255, 255, 255),
+                save_btn
+            )
+
+            colour = (0, 0, 0) if save_selected else (127, 127, 127)
+
+            pygame.draw.line(
+                display, colour, save_offset,
+                [save_offset[0], save_offset[1] + 7], width=2
+            )
+            pygame.draw.line(
+                display, colour, [save_offset[0] + 16, save_offset[1]],
+                [save_offset[0] + 16, save_offset[1] + 7], width=2
+            )
+            pygame.draw.line(
+                display, colour, [save_offset[0], save_offset[1] + 8],
+                [save_offset[0] + 17, save_offset[1] + 8], width=2
+            )
+            pygame.draw.line(
+                display, colour, [save_offset[0] + 8, save_offset[1] - 13],
+                [save_offset[0] + 8, save_offset[1] + 3], width=2
+            )
+            pygame.draw.line(
+                display, colour, [save_offset[0] + 8, save_offset[1] + 3],
+                [save_offset[0], save_offset[1] - 5], width = 2
+            )
+            pygame.draw.line(
+                display, colour, [save_offset[0] + 8, save_offset[1] + 3],
+                [save_offset[0] + 16, save_offset[1] - 5], width = 2
+            )
+
+            # load button
+            load_offset = [2.5 * dimensions[0] / 30, 19 * dimensions[1] / 20]
+
+            load_btn = pygame.rect.Rect(
+                load_offset[0] - 5, load_offset[1] - 18, 28, 33
+            )
+
+            load_selected = load_btn.collidepoint(coords.i, coords.j)
+
+            pygame.draw.rect(
+                display, (200, 200, 200) if load_selected else (255, 255, 255),
+                load_btn
+            )
+
+            colour = (0, 0, 0) if load_selected else (127, 127, 127)
+
+            pygame.draw.line(
+                display, colour, load_offset,
+                [load_offset[0], load_offset[1] + 7], width=2
+            )
+            pygame.draw.line(
+                display, colour, [load_offset[0] + 16, load_offset[1]],
+                [load_offset[0] + 16, load_offset[1] + 7], width=2
+            )
+            pygame.draw.line(
+                display, colour, [load_offset[0], load_offset[1] + 8],
+                [load_offset[0] + 17, load_offset[1] + 8], width=2
+            )
+            pygame.draw.line(
+                display, colour, [load_offset[0] + 8, load_offset[1] - 13],
+                [load_offset[0] + 8, load_offset[1] + 3], width=2
+            )
+            pygame.draw.line(
+                display, colour, [load_offset[0] + 8, load_offset[1] - 13],
+                [load_offset[0], load_offset[1] - 5], width = 2
+            )
+            pygame.draw.line(
+                display, colour, [load_offset[0] + 8, load_offset[1] - 13],
+                [load_offset[0] + 16, load_offset[1] - 5], width = 2
+            )
+
+
+        swap_offset = [19 * dimensions[0] / 20, 18 * dimensions[1] / 20]
+        swap_bbox = pygame.rect.Rect(
+            swap_offset[0] - 5, swap_offset[1] - 5,
+            32 if cube.layers == 3 else 44, 32 if cube.layers == 3 else 44
+        )
+        two_x_two_symbol = [
+            pygame.rect.Rect(*swap_offset, 10, 10),
+            pygame.rect.Rect(swap_offset[0], swap_offset[1] + 12, 10, 10),
+            pygame.rect.Rect(swap_offset[0] + 12, swap_offset[1], 10, 10),
+            pygame.rect.Rect(swap_offset[0] + 12, swap_offset[1] + 12, 10, 10)
         ]
-        deltas = [
-            sign(coords, back_arrow_points[0], back_arrow_points[1]),
-            sign(coords, back_arrow_points[1], back_arrow_points[2]),
-            sign(coords, back_arrow_points[2], back_arrow_points[0])
+
+        three_x_three_symbol = [
+            pygame.rect.Rect(*swap_offset, 10, 10),
+            pygame.rect.Rect(swap_offset[0], swap_offset[1] + 12, 10, 10),
+            pygame.rect.Rect(swap_offset[0], swap_offset[1] + 24, 10, 10),
+            pygame.rect.Rect(swap_offset[0] + 12, swap_offset[1], 10, 10),
+            pygame.rect.Rect(swap_offset[0] + 12, swap_offset[1] + 12, 10, 10),
+            pygame.rect.Rect(swap_offset[0] + 12, swap_offset[1] + 24, 10, 10),
+            pygame.rect.Rect(swap_offset[0] + 24, swap_offset[1], 10, 10),
+            pygame.rect.Rect(swap_offset[0] + 24, swap_offset[1] + 12, 10, 10),
+            pygame.rect.Rect(swap_offset[0] + 24, swap_offset[1] + 24, 10, 10)
         ]
-        neg = any(map(lambda x: x < 0, deltas))
-        pos = any(map(lambda x: x > 0, deltas))
-        if not (neg and pos):
-            back_arrow_selected = True
 
-        else:
-            back_arrow_selected = False
+        swap_selected = swap_bbox.collidepoint(coords.i, coords.j)
 
-        pygame.draw.polygon(
+        pygame.draw.rect(
             display,
-            (100, 100, 100) if back_arrow_selected else (190, 190, 190),
-            list(map(lambda x: [x.i, x.j], back_arrow_points))
+            (200, 200, 200) if swap_selected else (255, 255, 255),
+            swap_bbox
         )
 
-        forward_arrow_points = [
-            Vector2(9 * dimensions[0] / 12 + 10, 20),
-            Vector2(9 * dimensions[0] / 12 - 10, 10),
-            Vector2(9 * dimensions[0] / 12 - 10, 30)
-        ]
-        deltas = [
-            sign(coords, forward_arrow_points[0], forward_arrow_points[1]),
-            sign(coords, forward_arrow_points[1], forward_arrow_points[2]),
-            sign(coords, forward_arrow_points[2], forward_arrow_points[0])
-        ]
-        neg = any(map(lambda x: x < 0, deltas))
-        pos = any(map(lambda x: x > 0, deltas))
-        if not (neg and pos):
-            forward_arrow_selected = True
+        if cube.layers == 2:
+            for rect in three_x_three_symbol:
+                pygame.draw.rect(
+                    display,
+                    (127, 127, 127) if swap_selected else (200, 200, 200),
+                    rect
+                )
 
         else:
-            forward_arrow_selected = False
-
-        pygame.draw.polygon(
-            display,
-            (100, 100, 100) if forward_arrow_selected else (190, 190, 190),
-            list(map(lambda x: [x.i, x.j], forward_arrow_points))
-        )
+            for rect in two_x_two_symbol:
+                pygame.draw.rect(
+                    display,
+                    (127, 127, 127) if swap_selected else (200, 200, 200),
+                    rect
+                )
 
         pygame.display.update()
-
-        if display_mode and fps != 0:
-            # frame independently rotate the cube slowly around y-axis
-            global_rotation = rot_y(10 / fps) * global_rotation
 
     pygame.quit()
     cube.running = False
