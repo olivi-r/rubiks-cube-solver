@@ -123,33 +123,6 @@ if __name__ == "__main__":
                 dimensions = size
                 display = pygame.display.set_mode(dimensions, pygame.RESIZABLE)
 
-            if not cube.display:
-                if event.type == pygame.KEYDOWN:
-                    if event.key == pygame.K_s:
-                        name = asksaveasfilename(initialfile="rubiks cube.save", defaultextension=".save", filetypes=[
-                            ("All files", "*.*"), ("Save state", "*.save")
-                        ])
-                        if name != "":
-                            with open(name, "w+") as fp:
-                                if cube.layers == 3:
-                                    fp.write(cube.save_state(global_rotation3x3))
-
-                                elif cube.layers == 2:
-                                    fp.write(cube.save_state(global_rotation2x2))
-
-                    if event.key == pygame.K_a:
-                        name = askopenfilename(defaultextension=".save", filetypes=[
-                            ("All files", "*.*"), ("Save state", "*.save")
-                        ])
-                        if os.path.exists(name):
-                            with open(name, "r") as fp:
-                                cube, rot = cube.load_state(fp.read())
-                                if cube.layers == 3:
-                                    global_rotation3x3 = rot
-
-                                elif cube.layers == 2:
-                                    global_rotation2x2 = rot
-
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if event.button == 1:
                     if not dragging:
@@ -179,6 +152,33 @@ if __name__ == "__main__":
                                     cube.history_index += 1
                                     move = cube.history[cube.history_index]
                                     cube.rotate(move, True, False)
+
+                            elif save_selected:
+                                state = cube3x3.save_state(global_rotation3x3)
+                                state += "\n"
+                                state += cube2x2.save_state(global_rotation2x2)
+
+                                name = asksaveasfilename(initialfile="rubiks cube.save", defaultextension=".save", filetypes=[
+                                    ("All files", "*.*"), ("Save state", "*.save")
+                                ])
+                                if name != "":
+                                    with open(name, "w+") as fp:
+                                        fp.write(state)
+
+                            elif load_selected:
+                                name = askopenfilename(defaultextension=".save", filetypes=[
+                                    ("All files", "*.*"), ("Save state", "*.save")
+                                ])
+                                if os.path.exists(name):
+                                    with open(name, "r") as fp:
+                                        state3x3, state2x2 = fp.read().split("\n")
+                                        cube3x3, global_rotation3x3 = cube.load_state(state3x3)
+                                        cube2x2, global_rotation2x2 = cube.load_state(state2x2)
+                                        if cube.layers == 3:
+                                            cube = cube3x3
+
+                                        elif cube.layers == 2:
+                                            cube = cube2x2
 
                             elif pygame.mouse.get_pos()[1] > 40:
                                 # dragging the cube's rotation

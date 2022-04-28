@@ -380,7 +380,7 @@ class RubiksCube:
         self.tmp_pieces = self.pieces
         self.moving_threads = []
         self.moving = False
-        threading.Thread(target=self.handle_movement).start()
+        threading.Thread(target=self.handle_movement, daemon=True).start()
         self.duration = turn_duration
         self.opposite_faces = {"F": "B", "B": "F", "R": "L", "L": "R", "U": "D", "D": "U"}
 
