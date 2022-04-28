@@ -1,6 +1,7 @@
 from math3d import Camera, Matrix3x3, Polygon, Triangle, Vector2, Vector3, rot_x, rot_y, rot_z
 from cube import Center, Corner, Edge, RubiksCube
 import os; os.environ["PYGAME_HIDE_SUPPORT_PROMPT"] = "1"
+import sys
 import pygame
 import tkinter
 from tkinter.filedialog import askopenfilename, asksaveasfilename
@@ -66,6 +67,14 @@ if __name__ == "__main__":
     headless_container.update()
 
     display = pygame.display.set_mode(dimensions, pygame.RESIZABLE)
+
+    icon_path = "logo.png"
+    if hasattr(sys, "_MEIPASS"):
+        # allow program to find icon file in bundled executable mode
+        icon_path = os.path.join(sys._MEIPASS, icon_path)
+
+    icon_image = pygame.image.load(icon_path)
+    pygame.display.set_icon(icon_image)
 
     cam = Camera(Vector3(0, 0, -30), Vector3(0, 0, 0), 0.1)
 
