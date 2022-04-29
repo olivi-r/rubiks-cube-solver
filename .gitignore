@@ -1,5 +1,6 @@
 __pycache__
 *.spec
+*.exe
 build
 dist
 venv
