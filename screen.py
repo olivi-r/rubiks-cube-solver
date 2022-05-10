@@ -5,6 +5,7 @@ import sys
 import pygame
 import tkinter
 from tkinter.filedialog import askopenfilename, asksaveasfilename
+from tkinter.messagebox import showwarning
 
 
 def bubble_sort(to_sort: list) -> None:
@@ -61,19 +62,18 @@ if __name__ == "__main__":
     move_font_active = pygame.font.SysFont("Arial", 32)
     pygame.display.set_caption("Rubik's Cube Solver")
 
+    # allow program to find icon files in bundled executable mode
+    logo_dir = sys._MEIPASS if hasattr(sys, "_MEIPASS") else ""
+
     # create window for tkinter's save dialog to use and hide it
     headless_container = tkinter.Tk()
     headless_container.withdraw()
+    headless_container.iconbitmap(os.path.join(logo_dir, "logo.ico"))
     headless_container.update()
 
     display = pygame.display.set_mode(dimensions, pygame.RESIZABLE)
 
-    icon_path = "logo.png"
-    if hasattr(sys, "_MEIPASS"):
-        # allow program to find icon file in bundled executable mode
-        icon_path = os.path.join(sys._MEIPASS, icon_path)
-
-    icon_image = pygame.image.load(icon_path)
+    icon_image = pygame.image.load(os.path.join(logo_dir, "logo.png"))
     pygame.display.set_icon(icon_image)
 
     cam = Camera(Vector3(0, 0, -30), Vector3(0, 0, 0), 0.1)
@@ -168,26 +168,33 @@ if __name__ == "__main__":
                                 state += cube2x2.save_state(global_rotation2x2)
 
                                 name = asksaveasfilename(initialfile="rubiks cube.save", defaultextension=".save", filetypes=[
-                                    ("All files", "*.*"), ("Save state", "*.save")
+                                    ("Save File", "*.save"), ("All files", "*.*")
                                 ])
                                 if name != "":
                                     with open(name, "w+") as fp:
                                         fp.write(state)
 
                             elif load_selected:
-                                name = askopenfilename(defaultextension=".save", filetypes=[
-                                    ("All files", "*.*"), ("Save state", "*.save")
+                                name = askopenfilename(filetypes=[
+                                    ("Save File", "*.save"), ("All files", "*.*")
                                 ])
                                 if os.path.exists(name):
                                     with open(name, "r") as fp:
-                                        state3x3, state2x2 = fp.read().split("\n")
-                                        cube3x3, global_rotation3x3 = cube.load_state(state3x3)
-                                        cube2x2, global_rotation2x2 = cube.load_state(state2x2)
-                                        if cube.layers == 3:
-                                            cube = cube3x3
+                                        try:
+                                            state3x3, state2x2 = fp.read().split("\n")
+                                            cube3x3, global_rotation3x3 = cube.load_state(state3x3)
+                                            cube2x2, global_rotation2x2 = cube.load_state(state2x2)
+                                            if cube.layers == 3:
+                                                cube = cube3x3
 
-                                        elif cube.layers == 2:
-                                            cube = cube2x2
+                                            elif cube.layers == 2:
+                                                cube = cube2x2
+
+                                        except:
+                                            showwarning(
+                                                "Rubik's Cube Solver",
+                                                "Invalid Save File"
+                                            )
 
                             elif pygame.mouse.get_pos()[1] > 40:
                                 # dragging the cube's rotation
