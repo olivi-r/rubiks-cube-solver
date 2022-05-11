@@ -60,6 +60,9 @@ class Center(Mesh):
         self.orient = None
         self.initial_orient = None
 
+        # combined rotation matrix for instant load
+        self.instant_matrix = Matrix3x3([[1, 0, 0], [0, 1, 0], [0, 0, 1]])
+
     def copy(self) -> object:
         new = self.__class__(self.pos, self.col, self.width)
         new.polys = []
@@ -105,6 +108,9 @@ class Edge(Mesh):
         self.pos = pos
         self.orient = orient
         self.initial_orient = orient
+
+        # combined rotation matrix for instant load
+        self.instant_matrix = Matrix3x3([[1, 0, 0], [0, 1, 0], [0, 0, 1]])
 
     def copy(self) -> object:
         new = self.__class__(self.pos, self.col1, self.col2, self.width, self.orient)
@@ -159,6 +165,9 @@ class Corner(Mesh):
         self.orient = orient
         self.initial_orient = orient
 
+        # combined rotation matrix for instant load
+        self.instant_matrix = Matrix3x3([[1, 0, 0], [0, 1, 0], [0, 0, 1]])
+
     def copy(self) -> object:
         new = self.__class__(self.pos, self.col1, self.col2, self.col3, self.width, self.orient)
         new.polys = []
@@ -173,7 +182,7 @@ class Corner(Mesh):
 
 
 class RubiksCube:
-    def __init__(self, width: float, layers: int, turn_duration: float, display: bool):
+    def __init__(self, width: float, layers: int, turn_duration: float):
         self.white = "#ffffff"
         self.yellow = "#ffff00"
         self.red = "#ff0000"
@@ -372,7 +381,6 @@ class RubiksCube:
 
             self.pieces.append(z_layer)
 
-        self.display = display
         self.initial = [[[piece for piece in y] for y in z] for z in self.pieces]
 
         # initialize movement thread
@@ -698,7 +706,49 @@ class RubiksCube:
         # get copy of pieces to allow updating future positions before the actual pieces have stopped rotating
         pieces = [[[piece for piece in y] for y in z] for z in self.pieces]
 
-        self.moving_threads.append(threading.Thread(target=self.rotate_pieces, args=(face, depth, 3, pieces, show, history)))
+        if show:
+            self.moving_threads.append(threading.Thread(target=self.rotate_pieces, args=(face, depth, 3, pieces, history)))
+
+        else:
+            # apply moves to each pieces instant rotation matrix
+            if face == "F":
+                for i in range(self.layers):
+                    for j in range(self.layers):
+                        if self.pieces[depth][i][j] is not None:
+                            self.pieces[depth][i][j].instant_matrix = rot_z(90) * self.pieces[depth][i][j].instant_matrix 
+
+            elif face == "B":
+                for i in range(self.layers):
+                    for j in range(self.layers):
+                        if self.pieces[depth][i][j] is not None:
+                            self.pieces[depth][i][j].instant_matrix = rot_z(-90) * self.pieces[depth][i][j].instant_matrix
+
+            elif face == "R":
+                for i in range(self.layers):
+                    for j in range(self.layers):
+                        if self.pieces[i][j][depth] is not None:
+                            self.pieces[i][j][depth].instant_matrix = rot_x(-90) * self.pieces[i][j][depth].instant_matrix
+
+            elif face == "L":
+                for i in range(self.layers):
+                    for j in range(self.layers):
+                        if self.pieces[i][j][depth] is not None:
+                            self.pieces[i][j][depth].instant_matrix = rot_x(90) * self.pieces[i][j][depth].instant_matrix
+
+            elif face == "U":
+                for i in range(self.layers):
+                    for j in range(self.layers):
+                        if self.pieces[i][depth][j] is not None:
+                            self.pieces[i][depth][j].instant_matrix = rot_y(-90) * self.pieces[i][depth][j].instant_matrix
+
+            elif face == "D":
+                for i in range(self.layers):
+                    for j in range(self.layers):
+                        if self.pieces[i][depth][j] is not None:
+                            self.pieces[i][depth][j].instant_matrix = rot_y(90) * self.pieces[i][depth][j].instant_matrix
+
+            if history:
+                self.update_history(face, depth)
 
     def handle_movement(self) -> None:
         while self.running:
@@ -708,19 +758,7 @@ class RubiksCube:
                 thread.start()
                 thread.join()
 
-            elif self.display:
-                # display mode: scramble and solve the cube repeatedly waiting a few seconds inbetween
-                if self.solved:
-                    time.sleep(6)
-                    self.scramble()
-                    self.moving_threads.append(threading.Thread(target=time.sleep, args=(6,)))
-                    self.solve()
-
-    def rotate_pieces(self, face: str, depth: int, steps: int, pieces: list, show: bool, history: bool) -> None:
-        # rotate pieces in scene
-        if self.duration == 0 or not show:
-            steps = 1
-
+    def update_history(self, face, depth):
         if depth == self.layers - 1:
             if face in ["F", "D", "L"]:
                 current_move_text = self.opposite_faces[face] + "'"
@@ -741,9 +779,16 @@ class RubiksCube:
         else:
             current_move_text = face + "." + str(depth)
 
+        self.history.append(Move.from_str(current_move_text))
+        self.history_index += 1
+
+    def rotate_pieces(self, face: str, depth: int, steps: int, pieces: list, history: bool) -> None:
+        # rotate pieces in scene
+        if self.duration == 0:
+            steps = 1
+
         if history:
-            self.history.append(Move.from_str(current_move_text))
-            self.history_index += 1
+            self.update_history(face, depth)
 
         self.moving = True
 
@@ -769,7 +814,7 @@ class RubiksCube:
 
             self.tmp_pieces = [[[piece.copy() if piece is not None else None for piece in y] for y in z] for z in pieces]
 
-            if show and self.duration != 0:
+            if self.duration != 0:
                 time.sleep(self.duration / steps / 1000)
 
         self.moving = False
@@ -782,11 +827,11 @@ class RubiksCube:
             turns = random.randint(1, 3)
             depth = random.randint(0, self.layers - 1)
             move = Move(face, turns, depth)
-            self.rotate(move, False)
+            self.rotate(move, True)
 
     def save_state(self, global_rotation: Matrix3x3) -> str:
         state = str(self.width) + ":" + str(self.layers) + ":"
-        state += str(self.duration) + ":" + str(int(self.display)) + ":"
+        state += str(self.duration) + ":"
         state += ",".join(str(x) for y in global_rotation.data for x in y)
         state += ":" + ",".join(map(str, self.history[1:])) + ":"
         return state + str(self.history_index)
@@ -794,17 +839,25 @@ class RubiksCube:
     @classmethod
     def load_state(cls, state: str) -> tuple:
         state = state.split(":")
-        obj = cls(int(state[0]), int(state[1]), int(state[2]), int(state[3]))
-        rotation = [float(i) for i in state[4].split(",")]
-        moves = [i for i in state[5].split(",") if i.strip()]
+        obj = cls(int(state[0]), int(state[1]), int(state[2]))
+        rotation = [float(i) for i in state[3].split(",")]
+        moves = [i for i in state[4].split(",") if i.strip()]
         for move in moves:
             obj.history.append(Move.from_str(move))
 
-        index = int(state[6])
+        index = int(state[5])
         while obj.history_index < index:
             obj.history_index += 1
             move = obj.history[obj.history_index]
-            obj.rotate(move, True, False)
+            obj.rotate(move, False, False)
+
+        # apply combined rotation matrices stored for each piece
+        for i in range(obj.layers):
+            for j in range(obj.layers):
+                for k in range(obj.layers):
+                    if obj.pieces[i][j][k] is not None:
+                        obj.pieces[i][j][k].rotate(obj.pieces[i][j][k].instant_matrix)
+                        obj.pieces[i][j][k].instant_matrix = Matrix3x3([[1, 0, 0], [0, 1, 0], [0, 0, 1]])
 
         return obj, Matrix3x3([rotation[:3], rotation[3:6], rotation[6:]])
 
