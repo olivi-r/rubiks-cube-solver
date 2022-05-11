@@ -758,7 +758,7 @@ class RubiksCube:
                 thread.start()
                 thread.join()
 
-    def update_history(self, face, depth):
+    def update_history(self, face: str, depth: int) -> None:
         if depth == self.layers - 1:
             if face in ["F", "D", "L"]:
                 current_move_text = self.opposite_faces[face] + "'"
