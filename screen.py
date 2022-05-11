@@ -169,21 +169,21 @@ if __name__ == "__main__":
                             ])
                             if os.path.exists(name):
                                 with open(name, "r") as fp:
-                                    # try:
-                                    state3x3, state2x2 = fp.read().split("\n")
-                                    cube3x3, global_rotation3x3 = cube.load_state(state3x3)
-                                    cube2x2, global_rotation2x2 = cube.load_state(state2x2)
-                                    if cube.layers == 3:
-                                        cube = cube3x3
+                                    try:
+                                        state3x3, state2x2 = fp.read().split("\n")
+                                        cube3x3, global_rotation3x3 = cube.load_state(state3x3)
+                                        cube2x2, global_rotation2x2 = cube.load_state(state2x2)
+                                        if cube.layers == 3:
+                                            cube = cube3x3
 
-                                    elif cube.layers == 2:
-                                        cube = cube2x2
+                                        elif cube.layers == 2:
+                                            cube = cube2x2
 
-                                    # except:
-                                    #     showwarning(
-                                    #         "Rubik's Cube Solver",
-                                    #         "Invalid Save File"
-                                    #     )
+                                    except:
+                                        showwarning(
+                                            "Rubik's Cube Solver",
+                                            "Invalid Save File"
+                                        )
 
                         elif pygame.mouse.get_pos()[1] > 40:
                             # dragging the cube's rotation
